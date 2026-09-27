@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2563EB">
+<meta name="description" content="CarCost AI: учёт расходов на автомобиль, стоимость 1 км, прогноз и ИИ-ассистент.">
+<title>CarCost AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#F3F5F9; --surface:#FFFFFF; --surface2:#F7F8FB; --ink:#0E1726; --muted:#5A6478; --dim:#8A93A6; --line:#E3E7EF;
+  --accent:#2563EB; --accent2:#1D4FD8; --accentInk:#FFFFFF; --accentSoft:#E9F0FF;
+  --good:#0F8A4A; --goodSoft:#E3F6EC; --bad:#D8343C; --badSoft:#FDECEC; --warn:#B7791F; --warnSoft:#FDF4E3;
+  --grid:#EDF0F5; --shadow:0 1px 2px rgba(14,23,38,.04),0 6px 24px rgba(14,23,38,.06); --shadowLg:0 24px 60px rgba(14,23,38,.18);
+  --font:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0A0F1C; --surface:#111827; --surface2:#162033; --ink:#E7ECF5; --muted:#98A3B8; --dim:#6D7890; --line:#223049;
+    --accent:#5B8DFF; --accent2:#7AA3FF; --accentInk:#07122B; --accentSoft:rgba(91,141,255,.14);
+    --good:#3CCB85; --goodSoft:rgba(60,203,133,.13); --bad:#FF6B72; --badSoft:rgba(255,107,114,.13); --warn:#F2B34C; --warnSoft:rgba(242,179,76,.13);
+    --grid:#1C2740; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); --shadowLg:0 24px 60px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0A0F1C; --surface:#111827; --surface2:#162033; --ink:#E7ECF5; --muted:#98A3B8; --dim:#6D7890; --line:#223049;
+  --accent:#5B8DFF; --accent2:#7AA3FF; --accentInk:#07122B; --accentSoft:rgba(91,141,255,.14);
+  --good:#3CCB85; --goodSoft:rgba(60,203,133,.13); --bad:#FF6B72; --badSoft:rgba(255,107,114,.13); --warn:#F2B34C; --warnSoft:rgba(242,179,76,.13);
+  --grid:#1C2740; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); --shadowLg:0 24px 60px rgba(0,0,0,.5);
+}
+/* app-level theme switch (settings) wins over system */
+body.t-light{
+  color-scheme:light;
+  --bg:#F3F5F9; --surface:#FFFFFF; --surface2:#F7F8FB; --ink:#0E1726; --muted:#5A6478; --dim:#8A93A6; --line:#E3E7EF;
+  --accent:#2563EB; --accent2:#1D4FD8; --accentInk:#FFFFFF; --accentSoft:#E9F0FF;
+  --good:#0F8A4A; --goodSoft:#E3F6EC; --bad:#D8343C; --badSoft:#FDECEC; --warn:#B7791F; --warnSoft:#FDF4E3;
+  --grid:#EDF0F5; --shadow:0 1px 2px rgba(14,23,38,.04),0 6px 24px rgba(14,23,38,.06); --shadowLg:0 24px 60px rgba(14,23,38,.18);
+}
+body.t-dark{
+  color-scheme:dark;
+  --bg:#0A0F1C; --surface:#111827; --surface2:#162033; --ink:#E7ECF5; --muted:#98A3B8; --dim:#6D7890; --line:#223049;
+  --accent:#5B8DFF; --accent2:#7AA3FF; --accentInk:#07122B; --accentSoft:rgba(91,141,255,.14);
+  --good:#3CCB85; --goodSoft:rgba(60,203,133,.13); --bad:#FF6B72; --badSoft:rgba(255,107,114,.13); --warn:#F2B34C; --warnSoft:rgba(242,179,76,.13);
+  --grid:#1C2740; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); --shadowLg:0 24px 60px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent);text-decoration:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* buttons & inputs */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:10px 16px;border-radius:12px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s,box-shadow .15s,transform .1s}
+.btn:hover{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accentInk)}
+.btn.primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.ghost:hover{background:var(--surface2)}
+.btn.sm{padding:7px 11px;font-size:13px;border-radius:10px}
+.btn.lg{padding:14px 22px;font-size:16px;border-radius:14px}
+.btn.icon{width:38px;height:38px;padding:0}
+.btn.danger{color:var(--bad)}
+.btn.danger:hover{border-color:var(--bad);background:var(--badSoft)}
+.btn.block{width:100%}
+.field{display:grid;gap:6px}
+.field>span{font-size:13px;font-weight:600;color:var(--muted)}
+.inp{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:15px;transition:border-color .15s,box-shadow .15s}
+.inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accentSoft)}
+.inp.err{border-color:var(--bad)}
+.ferr{font-size:12.5px;color:var(--bad);min-height:0}
+select.inp{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+textarea.inp{resize:vertical}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:560px){.grid2,.grid3{grid-template-columns:1fr}}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600;background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+.chip.accent{background:var(--accentSoft);color:var(--accent);border-color:transparent}
+.chip.good{background:var(--goodSoft);color:var(--good);border-color:transparent}
+.chip.bad{background:var(--badSoft);color:var(--bad);border-color:transparent}
+.chip.warn{background:var(--warnSoft);color:var(--warn);border-color:transparent}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:9px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+/* public pages */
+.pub{padding-inline:16px}
+.pub .wrap{max-width:1120px;margin:0 auto}
+.pnav{display:flex;align-items:center;gap:12px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.02em;color:var(--ink);cursor:pointer;background:none;border:0;padding:0}
+.brand .lg{width:32px;height:32px;border-radius:10px;background:var(--accent);color:var(--accentInk);display:grid;place-items:center}
+.brand .lg svg{width:18px;height:18px}
+.brand small{font-size:11px;font-weight:700;color:var(--accent);background:var(--accentSoft);padding:2px 6px;border-radius:6px;letter-spacing:.02em}
+.pnav .sp{flex:1}
+.hero{display:grid;gap:40px;align-items:center;padding-block:48px 56px}
+@media (min-width:980px){.hero{grid-template-columns:1fr 1.05fr}}
+.hero h1{font-size:clamp(34px,5vw,56px);line-height:1.05;letter-spacing:-.035em;margin:14px 0 16px;font-weight:800;text-wrap:balance}
+.hero h1 span{color:var(--accent)}
+.hero p{font-size:18px;color:var(--muted);margin:0 0 26px;max-width:32em}
+.hero .ctas{display:flex;gap:10px;flex-wrap:wrap}
+.hero .fine{margin-top:14px;font-size:13px;color:var(--dim)}
+.mock{background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadowLg);padding:20px;display:grid;gap:14px}
+.mock .row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mock .k{border:1px solid var(--line);border-radius:14px;padding:12px}
+.mock .k b{display:block;font-size:20px;letter-spacing:-.02em}
+.mock .k span{font-size:12px;color:var(--muted)}
+.mock .bars{display:flex;align-items:flex-end;gap:8px;height:120px;padding:10px 4px 0;border-top:1px solid var(--line)}
+.mock .bars i{flex:1;background:var(--accent);opacity:.28;border-radius:6px 6px 0 0}
+.mock .bars i:last-child{opacity:1}
+.mock .ai{display:flex;gap:10px;align-items:flex-start;background:var(--accentSoft);border-radius:14px;padding:12px;font-size:13.5px}
+.mock .ai svg{color:var(--accent);margin-top:2px}
+.sec{padding-block:56px;border-top:1px solid var(--line)}
+.sec h2{font-size:clamp(24px,3vw,34px);letter-spacing:-.025em;margin:0 0 8px;text-wrap:balance}
+.sec .lead{color:var(--muted);margin:0 0 28px;max-width:40em}
+.feats{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;display:grid;gap:10px;box-shadow:var(--shadow)}
+.feat .ic{width:42px;height:42px;border-radius:12px;background:var(--accentSoft);color:var(--accent);display:grid;place-items:center}
+.feat h3{margin:0;font-size:17px}
+.feat p{margin:0;color:var(--muted);font-size:14px}
+.qlist{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-weight:600;font-size:14px;display:flex;gap:10px;align-items:center}
+.q svg{color:var(--accent)}
+.footer{padding-block:32px;border-top:1px solid var(--line);color:var(--dim);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+.authwrap{min-height:calc(100vh - 68px);display:grid;place-items:center;padding-block:24px 48px}
+.authcard{width:min(420px,100%);background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadowLg);display:grid;gap:16px}
+.authcard h1{margin:0;font-size:26px;letter-spacing:-.02em}
+.authcard p{margin:0;color:var(--muted)}
+.divider{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:13px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* app shell */
+.shell{display:grid;grid-template-columns:252px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;border-right:1px solid var(--line);background:var(--surface);padding:18px 14px;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+.sidebar .brand{padding:4px 8px 16px}
+.nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;color:var(--muted);font-weight:600;font-size:14.5px}
+.nav a:hover{background:var(--surface2);color:var(--ink)}
+.nav a.on{background:var(--accentSoft);color:var(--accent)}
+.nav{display:grid;gap:2px}
+.navlabel{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding:14px 12px 4px}
+.planbox{margin-top:auto;border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:10px;background:var(--surface2)}
+.planbox .top{display:flex;justify-content:space-between;align-items:center}
+.meter{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.userrow{display:flex;align-items:center;gap:10px;padding:10px 6px 0}
+.ava{width:34px;height:34px;border-radius:50%;background:var(--accentSoft);color:var(--accent);display:grid;place-items:center;font-weight:800;font-size:14px;flex:none}
+.userrow .nm{min-width:0;flex:1}
+.userrow b{display:block;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.userrow span{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.main{min-width:0;padding:24px 32px 48px}
+.topbar{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin-bottom:22px}
+.topbar h1{margin:0;font-size:26px;letter-spacing:-.025em;font-weight:800}
+.topbar p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.topbar .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mtop{display:none}
+.bnav{display:none}
+@media (max-width:900px){
+  .shell{display:block}
+  .sidebar{display:none}
+  .main{padding:12px 16px calc(96px + env(safe-area-inset-bottom,0px))}
+  .mtop{display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);margin-inline:-16px;padding:10px 16px}
+  .topbar h1{font-size:22px}
+  .bnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  .bnav a,.bnav button{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted);padding:6px 2px;border-radius:12px;background:none;border:0;cursor:pointer}
+  .bnav a.on,.bnav button.on{color:var(--accent)}
+  .bnav .plus{align-self:center;justify-self:center;width:48px;height:48px;border-radius:16px;background:var(--accent);color:var(--accentInk);display:grid;place-items:center;box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 35%,transparent)}
+  .bnav .plus svg{width:22px;height:22px}
+}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:20px;min-width:0}
+.card h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em}
+.card .ch{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.card .sub{font-size:13px;color:var(--muted);margin-top:2px}
+.kpis{display:grid;gap:14px;grid-template-columns:repeat(3,1fr);margin-bottom:16px}
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:420px){.kpis{gap:10px}}
+.kpis.mini{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin-bottom:12px}
+.kpis.mini .kpi{box-shadow:none;background:var(--surface2);padding:14px}
+.kpis.mini .v{font-size:21px;white-space:normal}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);padding:18px;display:grid;gap:6px;min-width:0}
+.kpi .l{font-size:13px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px}
+.kpi .l svg{width:16px;height:16px;color:var(--accent)}
+.kpi .v{font-size:clamp(20px,2.4vw,28px);font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .s{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.cols{display:grid;gap:16px;grid-template-columns:1.6fr 1fr;margin-bottom:16px}
+.cols.even{grid-template-columns:1fr 1fr}
+@media (max-width:1100px){.cols,.cols.even{grid-template-columns:1fr}}
+.stack{display:grid;gap:16px}
+
+/* charts */
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{font-family:var(--font);font-size:11.5px;fill:var(--muted);font-variant-numeric:tabular-nums}
+.tip{position:fixed;z-index:90;pointer-events:none;background:var(--ink);color:var(--surface);padding:8px 10px;border-radius:10px;font-size:12.5px;line-height:1.35;box-shadow:var(--shadowLg);transform:translate(-50%,calc(-100% - 10px));white-space:nowrap}
+.tip b{font-size:14px}
+.hbars{display:grid;gap:12px}
+.hb{display:grid;grid-template-columns:minmax(96px,150px) 1fr auto;gap:12px;align-items:center;font-size:14px}
+.hb .n{display:flex;gap:8px;align-items:center;min-width:0}
+.hb .n span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb .n svg{width:16px;height:16px;color:var(--muted)}
+.hb .t{height:10px;border-radius:99px;background:var(--grid);overflow:hidden}
+.hb .t i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.hb .v{font-weight:700;font-variant-numeric:tabular-nums;text-align:right;min-width:72px}
+.hb .v small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.dtable{width:100%;border-collapse:collapse;font-size:14px}
+.dtable th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;padding:8px 10px;border-bottom:1px solid var(--line)}
+.dtable td{padding:10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.dtable td.r,.dtable th.r{text-align:right}
+.scrollx{overflow-x:auto}
+
+/* lists */
+.rlist{display:grid}
+.ritem{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.ritem:last-child{border-bottom:0}
+.cic{width:40px;height:40px;border-radius:12px;background:var(--surface2);border:1px solid var(--line);display:grid;place-items:center;color:var(--accent)}
+.ritem b{display:block;font-size:14.5px}
+.ritem span{font-size:12.5px;color:var(--muted)}
+.ritem .amt{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+
+/* expenses table */
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+.filters .field{min-width:150px;flex:1}
+.filters .field.wide{flex:2;min-width:200px}
+.xt{width:100%;border-collapse:separate;border-spacing:0}
+.xt th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;white-space:nowrap}
+.xt td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:14.5px}
+.xt tr:hover td{background:var(--surface2)}
+.xt .amt{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.xt .acts{text-align:right;white-space:nowrap}
+.xt .cat{display:flex;gap:10px;align-items:center}
+.xt .cat .cic{width:34px;height:34px;border-radius:10px}
+.xt .note{color:var(--muted);font-size:13px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:760px){
+  .xt thead{display:none}
+  .xt,.xt tbody,.xt tr,.xt td{display:block;width:100%}
+  .xt tr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .xt td{border:0;padding:0}
+  .xt tr:hover td{background:none}
+  .xt td.d{grid-column:1;order:2;font-size:12.5px;color:var(--muted)}
+  .xt td.c{grid-column:1;order:1}
+  .xt td.amt{grid-column:2;grid-row:1;order:0}
+  .xt td.nt{grid-column:1/-1;order:3}
+  .xt td.car{display:none}
+  .xt td.acts{grid-column:2;grid-row:2;order:4}
+}
+.sumbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;background:var(--surface2);border:1px solid var(--line);border-radius:14px;margin-bottom:6px;font-size:14px}
+.sumbar b{font-variant-numeric:tabular-nums}
+
+/* cars */
+.cars{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.carcard{display:grid;gap:14px;position:relative}
+.carcard.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow)}
+.carcard .ttl{display:flex;gap:12px;align-items:center}
+.carcard .ttl .cic{width:48px;height:48px;border-radius:14px}
+.carcard h3{margin:0;font-size:18px;letter-spacing:-.01em}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.spec{background:var(--surface2);border-radius:12px;padding:10px 12px}
+.spec span{display:block;font-size:12px;color:var(--muted)}
+.spec b{font-variant-numeric:tabular-nums}
+.carcard .acts{display:flex;gap:8px;flex-wrap:wrap}
+
+/* calculator */
+.calc{display:grid;gap:16px;grid-template-columns:1fr 1fr}
+@media (max-width:1000px){.calc{grid-template-columns:1fr}}
+.res{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}
+@media (max-width:560px){.res{grid-template-columns:1fr}}
+.res .kpi{box-shadow:none;background:var(--surface2)}
+.res .kpi.hl{background:var(--accent);border-color:var(--accent);color:var(--accentInk)}
+.res .kpi.hl .l,.res .kpi.hl .s{color:color-mix(in srgb,var(--accentInk) 80%,transparent)}
+.res .kpi.hl .l svg{color:var(--accentInk)}
+.slider{display:grid;gap:6px}
+.slider .top{display:flex;justify-content:space-between;font-size:14px;font-weight:600}
+.slider .top b{font-variant-numeric:tabular-nums}
+.slider .sc{display:flex;justify-content:space-between;font-size:12px;color:var(--dim)}
+.delta{font-weight:700;font-variant-numeric:tabular-nums}
+.delta.up{color:var(--bad)} .delta.down{color:var(--good)}
+
+/* ai */
+.ai{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+@media (max-width:1100px){.ai{grid-template-columns:1fr}}
+.chatbox{display:flex;flex-direction:column;min-height:560px;padding:0;overflow:hidden}
+.msgs{flex:1;padding:20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;max-height:62vh}
+.msg{max-width:88%;padding:12px 14px;border-radius:16px;font-size:14.5px;line-height:1.55;white-space:pre-line}
+.msg.u{align-self:flex-end;background:var(--accent);color:var(--accentInk);border-bottom-right-radius:6px}
+.msg.a{align-self:flex-start;background:var(--surface2);border:1px solid var(--line);border-bottom-left-radius:6px}
+.msg .meta{display:flex;gap:6px;align-items:center;margin-top:8px;font-size:12px;color:var(--muted);white-space:normal}
+.msg.a b{font-weight:700}
+.typing{display:flex;gap:4px;padding:14px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bl 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,100%{opacity:.25}50%{opacity:1}}
+.composer{border-top:1px solid var(--line);padding:14px;display:grid;gap:10px;background:var(--surface)}
+.composer .row{display:flex;gap:8px}
+.composer textarea{min-height:46px;max-height:140px}
+.qchips{display:flex;gap:8px;flex-wrap:wrap}
+.qchip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink);text-align:left}
+.qchip:hover{border-color:var(--accent);color:var(--accent)}
+.paywall{border:1px solid var(--accent);background:linear-gradient(180deg,var(--accentSoft),var(--surface));border-radius:18px;padding:18px;display:grid;gap:10px}
+.paywall h3{margin:0;font-size:17px;display:flex;gap:8px;align-items:center}
+.paywall h3 svg{color:var(--accent)}
+.paywall p{margin:0;color:var(--muted);font-size:14px}
+.locked{position:relative;overflow:hidden}
+.locked .blur{filter:blur(6px);opacity:.55;pointer-events:none;user-select:none}
+.locked .lockov{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:20px}
+.locked .lockov>div{display:grid;gap:10px;justify-items:center;max-width:320px}
+.locked .lockov svg{color:var(--accent);width:26px;height:26px}
+
+/* pricing */
+.plans{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));max-width:860px}
+.plan{display:grid;gap:16px;align-content:start;position:relative}
+.plan.pro{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadowLg)}
+.plan .pr{font-size:38px;font-weight:800;letter-spacing:-.03em}
+.plan .pr small{font-size:15px;color:var(--muted);font-weight:500}
+.plan ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.plan li{display:flex;gap:10px;font-size:14.5px}
+.plan li svg{color:var(--good);width:17px;height:17px;margin-top:2px}
+.plan li.no{color:var(--dim)} .plan li.no svg{color:var(--dim)}
+
+/* settings */
+.set{display:grid;gap:16px;max-width:760px}
+.setrow{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;padding:14px 0;border-bottom:1px solid var(--line)}
+.setrow:last-child{border-bottom:0}
+.setrow .t b{display:block}
+.setrow .t span{font-size:13px;color:var(--muted)}
+
+/* empty / modal / toast */
+.empty{display:grid;justify-items:center;text-align:center;gap:12px;padding:48px 20px}
+.empty .ic{width:60px;height:60px;border-radius:18px;background:var(--accentSoft);color:var(--accent);display:grid;place-items:center}
+.empty .ic svg{width:28px;height:28px}
+.empty h3{margin:0;font-size:19px}
+.empty p{margin:0;color:var(--muted);max-width:30em}
+.empty .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.ov{position:fixed;inset:0;z-index:70;background:rgba(8,12,24,.5);backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px;animation:fi .15s ease}
+@keyframes fi{from{opacity:0}to{opacity:1}}
+.modal{width:min(540px,100%);max-height:calc(100vh - 32px);overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadowLg);padding:24px;display:grid;gap:16px;animation:pu .18s ease}
+@keyframes pu{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+.modal h3{margin:0;font-size:20px;letter-spacing:-.01em;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.modal p{margin:0;color:var(--muted)}
+.modal .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+@media (max-width:560px){.ov{place-items:end center;padding:0}.modal{border-radius:24px 24px 0 0;max-height:92vh;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}}
+.toasts{position:fixed;z-index:95;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:8px;max-width:min(380px,calc(100vw - 32px))}
+@media (max-width:900px){.toasts{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
+.toast{background:var(--ink);color:var(--surface);border-radius:14px;padding:12px 14px;font-size:14px;display:flex;gap:10px;align-items:flex-start;box-shadow:var(--shadowLg);animation:pu .2s ease}
+.toast svg{flex:none;margin-top:1px}
+.toast.ok svg{color:#3CCB85} .toast.err svg{color:#FF6B72}
+.note{font-size:13px;color:var(--muted)}
+.banner{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--warnSoft);color:var(--ink);font-size:13.5px}
+.banner svg{color:var(--warn);margin-top:1px}
+.banner.info{background:var(--accentSoft)} .banner.info svg{color:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div id="app"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div id="modals"></div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+/* Zod 3.23.8 (MIT) */
+(function(i,u){typeof exports=="object"&&typeof module<"u"?u(exports):typeof define=="function"&&define.amd?define(["exports"],u):(i=typeof globalThis<"u"?globalThis:i||self,u(i.Zod={}))})(this,function(i){"use strict";i.util=void 0,function(n){n.assertEqual=a=>a;function e(a){}n.assertIs=e;function t(a){throw new Error}n.assertNever=t,n.arrayToEnum=a=>{const s={};for(const d of a)s[d]=d;return s},n.getValidEnumValues=a=>{const s=n.objectKeys(a).filter(o=>typeof a[a[o]]!="number"),d={};for(const o of s)d[o]=a[o];return n.objectValues(d)},n.objectValues=a=>n.objectKeys(a).map(function(s){return a[s]}),n.objectKeys=typeof Object.keys=="function"?a=>Object.keys(a):a=>{const s=[];for(const d in a)Object.prototype.hasOwnProperty.call(a,d)&&s.push(d);return s},n.find=(a,s)=>{for(const d of a)if(s(d))return d},n.isInteger=typeof Number.isInteger=="function"?a=>Number.isInteger(a):a=>typeof a=="number"&&isFinite(a)&&Math.floor(a)===a;function r(a,s=" | "){return a.map(d=>typeof d=="string"?`'${d}'`:d).join(s)}n.joinValues=r,n.jsonStringifyReplacer=(a,s)=>typeof s=="bigint"?s.toString():s}(i.util||(i.util={})),i.objectUtil=void 0,function(n){n.mergeShapes=(e,t)=>({...e,...t})}(i.objectUtil||(i.objectUtil={}));const u=i.util.arrayToEnum(["string","nan","number","integer","float","boolean","date","bigint","symbol","function","undefined","null","array","object","unknown","promise","void","never","map","set"]),P=n=>{switch(typeof n){case"undefined":return u.undefined;case"string":return u.string;case"number":return isNaN(n)?u.nan:u.number;case"boolean":return u.boolean;case"function":return u.function;case"bigint":return u.bigint;case"symbol":return u.symbol;case"object":return Array.isArray(n)?u.array:n===null?u.null:n.then&&typeof n.then=="function"&&n.catch&&typeof n.catch=="function"?u.promise:typeof Map<"u"&&n instanceof Map?u.map:typeof Set<"u"&&n instanceof Set?u.set:typeof Date<"u"&&n instanceof Date?u.date:u.object;default:return u.unknown}},c=i.util.arrayToEnum(["invalid_type","invalid_literal","custom","invalid_union","invalid_union_discriminator","invalid_enum_value","unrecognized_keys","invalid_arguments","invalid_return_type","invalid_date","invalid_string","too_small","too_big","invalid_intersection_types","not_multiple_of","not_finite"]),Ce=n=>JSON.stringify(n,null,2).replace(/"([^"]+)":/g,"$1:");class T extends Error{constructor(e){super(),this.issues=[],this.addIssue=r=>{this.issues=[...this.issues,r]},this.addIssues=(r=[])=>{this.issues=[...this.issues,...r]};const t=new.target.prototype;Object.setPrototypeOf?Object.setPrototypeOf(this,t):this.__proto__=t,this.name="ZodError",this.issues=e}get errors(){return this.issues}format(e){const t=e||function(s){return s.message},r={_errors:[]},a=s=>{for(const d of s.issues)if(d.code==="invalid_union")d.unionErrors.map(a);else if(d.code==="invalid_return_type")a(d.returnTypeError);else if(d.code==="invalid_arguments")a(d.argumentsError);else if(d.path.length===0)r._errors.push(t(d));else{let o=r,h=0;for(;h<d.path.length;){const f=d.path[h];h===d.path.length-1?(o[f]=o[f]||{_errors:[]},o[f]._errors.push(t(d))):o[f]=o[f]||{_errors:[]},o=o[f],h++}}};return a(this),r}static assert(e){if(!(e instanceof T))throw new Error(`Not a ZodError: ${e}`)}toString(){return this.message}get message(){return JSON.stringify(this.issues,i.util.jsonStringifyReplacer,2)}get isEmpty(){return this.issues.length===0}flatten(e=t=>t.message){const t={},r=[];for(const a of this.issues)a.path.length>0?(t[a.path[0]]=t[a.path[0]]||[],t[a.path[0]].push(e(a))):r.push(e(a));return{formErrors:r,fieldErrors:t}}get formErrors(){return this.flatten()}}T.create=n=>new T(n);const L=(n,e)=>{let t;switch(n.code){case c.invalid_type:n.received===u.undefined?t="Required":t=`Expected ${n.expected}, received ${n.received}`;break;case c.invalid_literal:t=`Invalid literal value, expected ${JSON.stringify(n.expected,i.util.jsonStringifyReplacer)}`;break;case c.unrecognized_keys:t=`Unrecognized key(s) in object: ${i.util.joinValues(n.keys,", ")}`;break;case c.invalid_union:t="Invalid input";break;case c.invalid_union_discriminator:t=`Invalid discriminator value. Expected ${i.util.joinValues(n.options)}`;break;case c.invalid_enum_value:t=`Invalid enum value. Expected ${i.util.joinValues(n.options)}, received '${n.received}'`;break;case c.invalid_arguments:t="Invalid function arguments";break;case c.invalid_return_type:t="Invalid function return type";break;case c.invalid_date:t="Invalid date";break;case c.invalid_string:typeof n.validation=="object"?"includes"in n.validation?(t=`Invalid input: must include "${n.validation.includes}"`,typeof n.validation.position=="number"&&(t=`${t} at one or more positions greater than or equal to ${n.validation.position}`)):"startsWith"in n.validation?t=`Invalid input: must start with "${n.validation.startsWith}"`:"endsWith"in n.validation?t=`Invalid input: must end with "${n.validation.endsWith}"`:i.util.assertNever(n.validation):n.validation!=="regex"?t=`Invalid ${n.validation}`:t="Invalid";break;case c.too_small:n.type==="array"?t=`Array must contain ${n.exact?"exactly":n.inclusive?"at least":"more than"} ${n.minimum} element(s)`:n.type==="string"?t=`String must contain ${n.exact?"exactly":n.inclusive?"at least":"over"} ${n.minimum} character(s)`:n.type==="number"?t=`Number must be ${n.exact?"exactly equal to ":n.inclusive?"greater than or equal to ":"greater than "}${n.minimum}`:n.type==="date"?t=`Date must be ${n.exact?"exactly equal to ":n.inclusive?"greater than or equal to ":"greater than "}${new Date(Number(n.minimum))}`:t="Invalid input";break;case c.too_big:n.type==="array"?t=`Array must contain ${n.exact?"exactly":n.inclusive?"at most":"less than"} ${n.maximum} element(s)`:n.type==="string"?t=`String must contain ${n.exact?"exactly":n.inclusive?"at most":"under"} ${n.maximum} character(s)`:n.type==="number"?t=`Number must be ${n.exact?"exactly":n.inclusive?"less than or equal to":"less than"} ${n.maximum}`:n.type==="bigint"?t=`BigInt must be ${n.exact?"exactly":n.inclusive?"less than or equal to":"less than"} ${n.maximum}`:n.type==="date"?t=`Date must be ${n.exact?"exactly":n.inclusive?"smaller than or equal to":"smaller than"} ${new Date(Number(n.maximum))}`:t="Invalid input";break;case c.custom:t="Invalid input";break;case c.invalid_intersection_types:t="Intersection results could not be merged";break;case c.not_multiple_of:t=`Number must be a multiple of ${n.multipleOf}`;break;case c.not_finite:t="Number must be finite";break;default:t=e.defaultError,i.util.assertNever(n)}return{message:t}};let Oe=L;function Pe(n){Oe=n}function de(){return Oe}const oe=n=>{const{data:e,path:t,errorMaps:r,issueData:a}=n,s=[...t,...a.path||[]],d={...a,path:s};if(a.message!==void 0)return{...a,path:s,message:a.message};let o="";const h=r.filter(f=>!!f).slice().reverse();for(const f of h)o=f(d,{data:e,defaultError:o}).message;return{...a,path:s,message:o}},Re=[];function l(n,e){const t=de(),r=oe({issueData:e,data:n.data,path:n.path,errorMaps:[n.common.contextualErrorMap,n.schemaErrorMap,t,t===L?void 0:L].filter(a=>!!a)});n.common.issues.push(r)}class k{constructor(){this.value="valid"}dirty(){this.value==="valid"&&(this.value="dirty")}abort(){this.value!=="aborted"&&(this.value="aborted")}static mergeArray(e,t){const r=[];for(const a of t){if(a.status==="aborted")return p;a.status==="dirty"&&e.dirty(),r.push(a.value)}return{status:e.value,value:r}}static async mergeObjectAsync(e,t){const r=[];for(const a of t){const s=await a.key,d=await a.value;r.push({key:s,value:d})}return k.mergeObjectSync(e,r)}static mergeObjectSync(e,t){const r={};for(const a of t){const{key:s,value:d}=a;if(s.status==="aborted"||d.status==="aborted")return p;s.status==="dirty"&&e.dirty(),d.status==="dirty"&&e.dirty(),s.value!=="__proto__"&&(typeof d.value<"u"||a.alwaysSet)&&(r[s.value]=d.value)}return{status:e.value,value:r}}}const p=Object.freeze({status:"aborted"}),K=n=>({status:"dirty",value:n}),b=n=>({status:"valid",value:n}),ye=n=>n.status==="aborted",ve=n=>n.status==="dirty",B=n=>n.status==="valid",W=n=>typeof Promise<"u"&&n instanceof Promise;function _e(n,e,t,r){if(t==="a"&&!r)throw new TypeError("Private accessor was defined without a getter");if(typeof e=="function"?n!==e||!r:!e.has(n))throw new TypeError("Cannot read private member from an object whose class did not declare it");return t==="m"?r:t==="a"?r.call(n):r?r.value:e.get(n)}function Ie(n,e,t,r,a){if(r==="m")throw new TypeError("Private method is not writable");if(r==="a"&&!a)throw new TypeError("Private accessor was defined without a setter");if(typeof e=="function"?n!==e||!a:!e.has(n))throw new TypeError("Cannot write private member to an object whose class did not declare it");return r==="a"?a.call(n,t):a?a.value=t:e.set(n,t),t}typeof SuppressedError=="function"&&SuppressedError;var m;(function(n){n.errToObj=e=>typeof e=="string"?{message:e}:e||{},n.toString=e=>typeof e=="string"?e:e?.message})(m||(m={}));var ce,ue;class C{constructor(e,t,r,a){this._cachedPath=[],this.parent=e,this.data=t,this._path=r,this._key=a}get path(){return this._cachedPath.length||(this._key instanceof Array?this._cachedPath.push(...this._path,...this._key):this._cachedPath.push(...this._path,this._key)),this._cachedPath}}const je=(n,e)=>{if(B(e))return{success:!0,data:e.value};if(!n.common.issues.length)throw new Error("Validation failed but no issues detected.");return{success:!1,get error(){if(this._error)return this._error;const t=new T(n.common.issues);return this._error=t,this._error}}};function _(n){if(!n)return{};const{errorMap:e,invalid_type_error:t,required_error:r,description:a}=n;if(e&&(t||r))throw new Error(`Can't use "invalid_type_error" or "required_error" in conjunction with custom error map.`);return e?{errorMap:e,description:a}:{errorMap:(d,o)=>{var h,f;const{message:y}=n;return d.code==="invalid_enum_value"?{message:y??o.defaultError}:typeof o.data>"u"?{message:(h=y??r)!==null&&h!==void 0?h:o.defaultError}:d.code!=="invalid_type"?{message:o.defaultError}:{message:(f=y??t)!==null&&f!==void 0?f:o.defaultError}},description:a}}class v{constructor(e){this.spa=this.safeParseAsync,this._def=e,this.parse=this.parse.bind(this),this.safeParse=this.safeParse.bind(this),this.parseAsync=this.parseAsync.bind(this),this.safeParseAsync=this.safeParseAsync.bind(this),this.spa=this.spa.bind(this),this.refine=this.refine.bind(this),this.refinement=this.refinement.bind(this),this.superRefine=this.superRefine.bind(this),this.optional=this.optional.bind(this),this.nullable=this.nullable.bind(this),this.nullish=this.nullish.bind(this),this.array=this.array.bind(this),this.promise=this.promise.bind(this),this.or=this.or.bind(this),this.and=this.and.bind(this),this.transform=this.transform.bind(this),this.brand=this.brand.bind(this),this.default=this.default.bind(this),this.catch=this.catch.bind(this),this.describe=this.describe.bind(this),this.pipe=this.pipe.bind(this),this.readonly=this.readonly.bind(this),this.isNullable=this.isNullable.bind(this),this.isOptional=this.isOptional.bind(this)}get description(){return this._def.description}_getType(e){return P(e.data)}_getOrReturnCtx(e,t){return t||{common:e.parent.common,data:e.data,parsedType:P(e.data),schemaErrorMap:this._def.errorMap,path:e.path,parent:e.parent}}_processInputParams(e){return{status:new k,ctx:{common:e.parent.common,data:e.data,parsedType:P(e.data),schemaErrorMap:this._def.errorMap,path:e.path,parent:e.parent}}}_parseSync(e){const t=this._parse(e);if(W(t))throw new Error("Synchronous parse encountered promise.");return t}_parseAsync(e){const t=this._parse(e);return Promise.resolve(t)}parse(e,t){const r=this.safeParse(e,t);if(r.success)return r.data;throw r.error}safeParse(e,t){var r;const a={common:{issues:[],async:(r=t?.async)!==null&&r!==void 0?r:!1,contextualErrorMap:t?.errorMap},path:t?.path||[],schemaErrorMap:this._def.errorMap,parent:null,data:e,parsedType:P(e)},s=this._parseSync({data:e,path:a.path,parent:a});return je(a,s)}async parseAsync(e,t){const r=await this.safeParseAsync(e,t);if(r.success)return r.data;throw r.error}async safeParseAsync(e,t){const r={common:{issues:[],contextualErrorMap:t?.errorMap,async:!0},path:t?.path||[],schemaErrorMap:this._def.errorMap,parent:null,data:e,parsedType:P(e)},a=this._parse({data:e,path:r.path,parent:r}),s=await(W(a)?a:Promise.resolve(a));return je(r,s)}refine(e,t){const r=a=>typeof t=="string"||typeof t>"u"?{message:t}:typeof t=="function"?t(a):t;return this._refinement((a,s)=>{const d=e(a),o=()=>s.addIssue({code:c.custom,...r(a)});return typeof Promise<"u"&&d instanceof Promise?d.then(h=>h?!0:(o(),!1)):d?!0:(o(),!1)})}refinement(e,t){return this._refinement((r,a)=>e(r)?!0:(a.addIssue(typeof t=="function"?t(r,a):t),!1))}_refinement(e){return new Z({schema:this,typeName:i.ZodFirstPartyTypeKind.ZodEffects,effect:{type:"refinement",refinement:e}})}superRefine(e){return this._refinement(e)}optional(){return x.create(this,this._def)}nullable(){return M.create(this,this._def)}nullish(){return this.nullable().optional()}array(){return S.create(this,this._def)}promise(){return F.create(this,this._def)}or(e){return G.create([this,e],this._def)}and(e){return X.create(this,e,this._def)}transform(e){return new Z({..._(this._def),schema:this,typeName:i.ZodFirstPartyTypeKind.ZodEffects,effect:{type:"transform",transform:e}})}default(e){const t=typeof e=="function"?e:()=>e;return new re({..._(this._def),innerType:this,defaultValue:t,typeName:i.ZodFirstPartyTypeKind.ZodDefault})}brand(){return new ge({typeName:i.ZodFirstPartyTypeKind.ZodBranded,type:this,..._(this._def)})}catch(e){const t=typeof e=="function"?e:()=>e;return new ae({..._(this._def),innerType:this,catchValue:t,typeName:i.ZodFirstPartyTypeKind.ZodCatch})}describe(e){const t=this.constructor;return new t({...this._def,description:e})}pipe(e){return se.create(this,e)}readonly(){return ie.create(this)}isOptional(){return this.safeParse(void 0).success}isNullable(){return this.safeParse(null).success}}const wt=/^c[^\s-]{8,}$/i,St=/^[0-9a-z]+$/,Nt=/^[0-9A-HJKMNP-TV-Z]{26}$/,Et=/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i,xt=/^[a-z0-9_-]{21}$/i,Ct=/^[-+]?P(?!$)(?:(?:[-+]?\d+Y)|(?:[-+]?\d+[.,]\d+Y$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:(?:[-+]?\d+W)|(?:[-+]?\d+[.,]\d+W$))?(?:(?:[-+]?\d+D)|(?:[-+]?\d+[.,]\d+D$))?(?:T(?=[\d+-])(?:(?:[-+]?\d+H)|(?:[-+]?\d+[.,]\d+H$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:[-+]?\d+(?:[.,]\d+)?S)?)??$/,Ot=/^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i,Pt="^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$";let be;const Rt=/^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/,It=/^(([a-f0-9]{1,4}:){7}|::([a-f0-9]{1,4}:){0,6}|([a-f0-9]{1,4}:){1}:([a-f0-9]{1,4}:){0,5}|([a-f0-9]{1,4}:){2}:([a-f0-9]{1,4}:){0,4}|([a-f0-9]{1,4}:){3}:([a-f0-9]{1,4}:){0,3}|([a-f0-9]{1,4}:){4}:([a-f0-9]{1,4}:){0,2}|([a-f0-9]{1,4}:){5}:([a-f0-9]{1,4}:){0,1})([a-f0-9]{1,4}|(((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2}))\.){3}((25[0-5])|(2[0-4][0-9])|(1[0-9]{2})|([0-9]{1,2})))$/,jt=/^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/,Ae="((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))",At=new RegExp(`^${Ae}$`);function Me(n){let e="([01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d";return n.precision?e=`${e}\\.\\d{${n.precision}}`:n.precision==null&&(e=`${e}(\\.\\d+)?`),e}function Mt(n){return new RegExp(`^${Me(n)}$`)}function Te(n){let e=`${Ae}T${Me(n)}`;const t=[];return t.push(n.local?"Z?":"Z"),n.offset&&t.push("([+-]\\d{2}:?\\d{2})"),e=`${e}(${t.join("|")})`,new RegExp(`^${e}$`)}function $t(n,e){return!!((e==="v4"||!e)&&Rt.test(n)||(e==="v6"||!e)&&It.test(n))}class w extends v{_parse(e){if(this._def.coerce&&(e.data=String(e.data)),this._getType(e)!==u.string){const s=this._getOrReturnCtx(e);return l(s,{code:c.invalid_type,expected:u.string,received:s.parsedType}),p}const r=new k;let a;for(const s of this._def.checks)if(s.kind==="min")e.data.length<s.value&&(a=this._getOrReturnCtx(e,a),l(a,{code:c.too_small,minimum:s.value,type:"string",inclusive:!0,exact:!1,message:s.message}),r.dirty());else if(s.kind==="max")e.data.length>s.value&&(a=this._getOrReturnCtx(e,a),l(a,{code:c.too_big,maximum:s.value,type:"string",inclusive:!0,exact:!1,message:s.message}),r.dirty());else if(s.kind==="length"){const d=e.data.length>s.value,o=e.data.length<s.value;(d||o)&&(a=this._getOrReturnCtx(e,a),d?l(a,{code:c.too_big,maximum:s.value,type:"string",inclusive:!0,exact:!0,message:s.message}):o&&l(a,{code:c.too_small,minimum:s.value,type:"string",inclusive:!0,exact:!0,message:s.message}),r.dirty())}else if(s.kind==="email")Ot.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"email",code:c.invalid_string,message:s.message}),r.dirty());else if(s.kind==="emoji")be||(be=new RegExp(Pt,"u")),be.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"emoji",code:c.invalid_string,message:s.message}),r.dirty());else if(s.kind==="uuid")Et.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"uuid",code:c.invalid_string,message:s.message}),r.dirty());else if(s.kind==="nanoid")xt.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"nanoid",code:c.invalid_string,message:s.message}),r.dirty());else if(s.kind==="cuid")wt.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"cuid",code:c.invalid_string,message:s.message}),r.dirty());else if(s.kind==="cuid2")St.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"cuid2",code:c.invalid_string,message:s.message}),r.dirty());else if(s.kind==="ulid")Nt.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"ulid",code:c.invalid_string,message:s.message}),r.dirty());else if(s.kind==="url")try{new URL(e.data)}catch{a=this._getOrReturnCtx(e,a),l(a,{validation:"url",code:c.invalid_string,message:s.message}),r.dirty()}else s.kind==="regex"?(s.regex.lastIndex=0,s.regex.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"regex",code:c.invalid_string,message:s.message}),r.dirty())):s.kind==="trim"?e.data=e.data.trim():s.kind==="includes"?e.data.includes(s.value,s.position)||(a=this._getOrReturnCtx(e,a),l(a,{code:c.invalid_string,validation:{includes:s.value,position:s.position},message:s.message}),r.dirty()):s.kind==="toLowerCase"?e.data=e.data.toLowerCase():s.kind==="toUpperCase"?e.data=e.data.toUpperCase():s.kind==="startsWith"?e.data.startsWith(s.value)||(a=this._getOrReturnCtx(e,a),l(a,{code:c.invalid_string,validation:{startsWith:s.value},message:s.message}),r.dirty()):s.kind==="endsWith"?e.data.endsWith(s.value)||(a=this._getOrReturnCtx(e,a),l(a,{code:c.invalid_string,validation:{endsWith:s.value},message:s.message}),r.dirty()):s.kind==="datetime"?Te(s).test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{code:c.invalid_string,validation:"datetime",message:s.message}),r.dirty()):s.kind==="date"?At.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{code:c.invalid_string,validation:"date",message:s.message}),r.dirty()):s.kind==="time"?Mt(s).test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{code:c.invalid_string,validation:"time",message:s.message}),r.dirty()):s.kind==="duration"?Ct.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"duration",code:c.invalid_string,message:s.message}),r.dirty()):s.kind==="ip"?$t(e.data,s.version)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"ip",code:c.invalid_string,message:s.message}),r.dirty()):s.kind==="base64"?jt.test(e.data)||(a=this._getOrReturnCtx(e,a),l(a,{validation:"base64",code:c.invalid_string,message:s.message}),r.dirty()):i.util.assertNever(s);return{status:r.value,value:e.data}}_regex(e,t,r){return this.refinement(a=>e.test(a),{validation:t,code:c.invalid_string,...m.errToObj(r)})}_addCheck(e){return new w({...this._def,checks:[...this._def.checks,e]})}email(e){return this._addCheck({kind:"email",...m.errToObj(e)})}url(e){return this._addCheck({kind:"url",...m.errToObj(e)})}emoji(e){return this._addCheck({kind:"emoji",...m.errToObj(e)})}uuid(e){return this._addCheck({kind:"uuid",...m.errToObj(e)})}nanoid(e){return this._addCheck({kind:"nanoid",...m.errToObj(e)})}cuid(e){return this._addCheck({kind:"cuid",...m.errToObj(e)})}cuid2(e){return this._addCheck({kind:"cuid2",...m.errToObj(e)})}ulid(e){return this._addCheck({kind:"ulid",...m.errToObj(e)})}base64(e){return this._addCheck({kind:"base64",...m.errToObj(e)})}ip(e){return this._addCheck({kind:"ip",...m.errToObj(e)})}datetime(e){var t,r;return typeof e=="string"?this._addCheck({kind:"datetime",precision:null,offset:!1,local:!1,message:e}):this._addCheck({kind:"datetime",precision:typeof e?.precision>"u"?null:e?.precision,offset:(t=e?.offset)!==null&&t!==void 0?t:!1,local:(r=e?.local)!==null&&r!==void 0?r:!1,...m.errToObj(e?.message)})}date(e){return this._addCheck({kind:"date",message:e})}time(e){return typeof e=="string"?this._addCheck({kind:"time",precision:null,message:e}):this._addCheck({kind:"time",precision:typeof e?.precision>"u"?null:e?.precision,...m.errToObj(e?.message)})}duration(e){return this._addCheck({kind:"duration",...m.errToObj(e)})}regex(e,t){return this._addCheck({kind:"regex",regex:e,...m.errToObj(t)})}includes(e,t){return this._addCheck({kind:"includes",value:e,position:t?.position,...m.errToObj(t?.message)})}startsWith(e,t){return this._addCheck({kind:"startsWith",value:e,...m.errToObj(t)})}endsWith(e,t){return this._addCheck({kind:"endsWith",value:e,...m.errToObj(t)})}min(e,t){return this._addCheck({kind:"min",value:e,...m.errToObj(t)})}max(e,t){return this._addCheck({kind:"max",value:e,...m.errToObj(t)})}length(e,t){return this._addCheck({kind:"length",value:e,...m.errToObj(t)})}nonempty(e){return this.min(1,m.errToObj(e))}trim(){return new w({...this._def,checks:[...this._def.checks,{kind:"trim"}]})}toLowerCase(){return new w({...this._def,checks:[...this._def.checks,{kind:"toLowerCase"}]})}toUpperCase(){return new w({...this._def,checks:[...this._def.checks,{kind:"toUpperCase"}]})}get isDatetime(){return!!this._def.checks.find(e=>e.kind==="datetime")}get isDate(){return!!this._def.checks.find(e=>e.kind==="date")}get isTime(){return!!this._def.checks.find(e=>e.kind==="time")}get isDuration(){return!!this._def.checks.find(e=>e.kind==="duration")}get isEmail(){return!!this._def.checks.find(e=>e.kind==="email")}get isURL(){return!!this._def.checks.find(e=>e.kind==="url")}get isEmoji(){return!!this._def.checks.find(e=>e.kind==="emoji")}get isUUID(){return!!this._def.checks.find(e=>e.kind==="uuid")}get isNANOID(){return!!this._def.checks.find(e=>e.kind==="nanoid")}get isCUID(){return!!this._def.checks.find(e=>e.kind==="cuid")}get isCUID2(){return!!this._def.checks.find(e=>e.kind==="cuid2")}get isULID(){return!!this._def.checks.find(e=>e.kind==="ulid")}get isIP(){return!!this._def.checks.find(e=>e.kind==="ip")}get isBase64(){return!!this._def.checks.find(e=>e.kind==="base64")}get minLength(){let e=null;for(const t of this._def.checks)t.kind==="min"&&(e===null||t.value>e)&&(e=t.value);return e}get maxLength(){let e=null;for(const t of this._def.checks)t.kind==="max"&&(e===null||t.value<e)&&(e=t.value);return e}}w.create=n=>{var e;return new w({checks:[],typeName:i.ZodFirstPartyTypeKind.ZodString,coerce:(e=n?.coerce)!==null&&e!==void 0?e:!1,..._(n)})};function Vt(n,e){const t=(n.toString().split(".")[1]||"").length,r=(e.toString().split(".")[1]||"").length,a=t>r?t:r,s=parseInt(n.toFixed(a).replace(".","")),d=parseInt(e.toFixed(a).replace(".",""));return s%d/Math.pow(10,a)}class R extends v{constructor(){super(...arguments),this.min=this.gte,this.max=this.lte,this.step=this.multipleOf}_parse(e){if(this._def.coerce&&(e.data=Number(e.data)),this._getType(e)!==u.number){const s=this._getOrReturnCtx(e);return l(s,{code:c.invalid_type,expected:u.number,received:s.parsedType}),p}let r;const a=new k;for(const s of this._def.checks)s.kind==="int"?i.util.isInteger(e.data)||(r=this._getOrReturnCtx(e,r),l(r,{code:c.invalid_type,expected:"integer",received:"float",message:s.message}),a.dirty()):s.kind==="min"?(s.inclusive?e.data<s.value:e.data<=s.value)&&(r=this._getOrReturnCtx(e,r),l(r,{code:c.too_small,minimum:s.value,type:"number",inclusive:s.inclusive,exact:!1,message:s.message}),a.dirty()):s.kind==="max"?(s.inclusive?e.data>s.value:e.data>=s.value)&&(r=this._getOrReturnCtx(e,r),l(r,{code:c.too_big,maximum:s.value,type:"number",inclusive:s.inclusive,exact:!1,message:s.message}),a.dirty()):s.kind==="multipleOf"?Vt(e.data,s.value)!==0&&(r=this._getOrReturnCtx(e,r),l(r,{code:c.not_multiple_of,multipleOf:s.value,message:s.message}),a.dirty()):s.kind==="finite"?Number.isFinite(e.data)||(r=this._getOrReturnCtx(e,r),l(r,{code:c.not_finite,message:s.message}),a.dirty()):i.util.assertNever(s);return{status:a.value,value:e.data}}gte(e,t){return this.setLimit("min",e,!0,m.toString(t))}gt(e,t){return this.setLimit("min",e,!1,m.toString(t))}lte(e,t){return this.setLimit("max",e,!0,m.toString(t))}lt(e,t){return this.setLimit("max",e,!1,m.toString(t))}setLimit(e,t,r,a){return new R({...this._def,checks:[...this._def.checks,{kind:e,value:t,inclusive:r,message:m.toString(a)}]})}_addCheck(e){return new R({...this._def,checks:[...this._def.checks,e]})}int(e){return this._addCheck({kind:"int",message:m.toString(e)})}positive(e){return this._addCheck({kind:"min",value:0,inclusive:!1,message:m.toString(e)})}negative(e){return this._addCheck({kind:"max",value:0,inclusive:!1,message:m.toString(e)})}nonpositive(e){return this._addCheck({kind:"max",value:0,inclusive:!0,message:m.toString(e)})}nonnegative(e){return this._addCheck({kind:"min",value:0,inclusive:!0,message:m.toString(e)})}multipleOf(e,t){return this._addCheck({kind:"multipleOf",value:e,message:m.toString(t)})}finite(e){return this._addCheck({kind:"finite",message:m.toString(e)})}safe(e){return this._addCheck({kind:"min",inclusive:!0,value:Number.MIN_SAFE_INTEGER,message:m.toString(e)})._addCheck({kind:"max",inclusive:!0,value:Number.MAX_SAFE_INTEGER,message:m.toString(e)})}get minValue(){let e=null;for(const t of this._def.checks)t.kind==="min"&&(e===null||t.value>e)&&(e=t.value);return e}get maxValue(){let e=null;for(const t of this._def.checks)t.kind==="max"&&(e===null||t.value<e)&&(e=t.value);return e}get isInt(){return!!this._def.checks.find(e=>e.kind==="int"||e.kind==="multipleOf"&&i.util.isInteger(e.value))}get isFinite(){let e=null,t=null;for(const r of this._def.checks){if(r.kind==="finite"||r.kind==="int"||r.kind==="multipleOf")return!0;r.kind==="min"?(t===null||r.value>t)&&(t=r.value):r.kind==="max"&&(e===null||r.value<e)&&(e=r.value)}return Number.isFinite(t)&&Number.isFinite(e)}}R.create=n=>new R({checks:[],typeName:i.ZodFirstPartyTypeKind.ZodNumber,coerce:n?.coerce||!1,..._(n)});class I extends v{constructor(){super(...arguments),this.min=this.gte,this.max=this.lte}_parse(e){if(this._def.coerce&&(e.data=BigInt(e.data)),this._getType(e)!==u.bigint){const s=this._getOrReturnCtx(e);return l(s,{code:c.invalid_type,expected:u.bigint,received:s.parsedType}),p}let r;const a=new k;for(const s of this._def.checks)s.kind==="min"?(s.inclusive?e.data<s.value:e.data<=s.value)&&(r=this._getOrReturnCtx(e,r),l(r,{code:c.too_small,type:"bigint",minimum:s.value,inclusive:s.inclusive,message:s.message}),a.dirty()):s.kind==="max"?(s.inclusive?e.data>s.value:e.data>=s.value)&&(r=this._getOrReturnCtx(e,r),l(r,{code:c.too_big,type:"bigint",maximum:s.value,inclusive:s.inclusive,message:s.message}),a.dirty()):s.kind==="multipleOf"?e.data%s.value!==BigInt(0)&&(r=this._getOrReturnCtx(e,r),l(r,{code:c.not_multiple_of,multipleOf:s.value,message:s.message}),a.dirty()):i.util.assertNever(s);return{status:a.value,value:e.data}}gte(e,t){return this.setLimit("min",e,!0,m.toString(t))}gt(e,t){return this.setLimit("min",e,!1,m.toString(t))}lte(e,t){return this.setLimit("max",e,!0,m.toString(t))}lt(e,t){return this.setLimit("max",e,!1,m.toString(t))}setLimit(e,t,r,a){return new I({...this._def,checks:[...this._def.checks,{kind:e,value:t,inclusive:r,message:m.toString(a)}]})}_addCheck(e){return new I({...this._def,checks:[...this._def.checks,e]})}positive(e){return this._addCheck({kind:"min",value:BigInt(0),inclusive:!1,message:m.toString(e)})}negative(e){return this._addCheck({kind:"max",value:BigInt(0),inclusive:!1,message:m.toString(e)})}nonpositive(e){return this._addCheck({kind:"max",value:BigInt(0),inclusive:!0,message:m.toString(e)})}nonnegative(e){return this._addCheck({kind:"min",value:BigInt(0),inclusive:!0,message:m.toString(e)})}multipleOf(e,t){return this._addCheck({kind:"multipleOf",value:e,message:m.toString(t)})}get minValue(){let e=null;for(const t of this._def.checks)t.kind==="min"&&(e===null||t.value>e)&&(e=t.value);return e}get maxValue(){let e=null;for(const t of this._def.checks)t.kind==="max"&&(e===null||t.value<e)&&(e=t.value);return e}}I.create=n=>{var e;return new I({checks:[],typeName:i.ZodFirstPartyTypeKind.ZodBigInt,coerce:(e=n?.coerce)!==null&&e!==void 0?e:!1,..._(n)})};class q extends v{_parse(e){if(this._def.coerce&&(e.data=!!e.data),this._getType(e)!==u.boolean){const r=this._getOrReturnCtx(e);return l(r,{code:c.invalid_type,expected:u.boolean,received:r.parsedType}),p}return b(e.data)}}q.create=n=>new q({typeName:i.ZodFirstPartyTypeKind.ZodBoolean,coerce:n?.coerce||!1,..._(n)});class $ extends v{_parse(e){if(this._def.coerce&&(e.data=new Date(e.data)),this._getType(e)!==u.date){const s=this._getOrReturnCtx(e);return l(s,{code:c.invalid_type,expected:u.date,received:s.parsedType}),p}if(isNaN(e.data.getTime())){const s=this._getOrReturnCtx(e);return l(s,{code:c.invalid_date}),p}const r=new k;let a;for(const s of this._def.checks)s.kind==="min"?e.data.getTime()<s.value&&(a=this._getOrReturnCtx(e,a),l(a,{code:c.too_small,message:s.message,inclusive:!0,exact:!1,minimum:s.value,type:"date"}),r.dirty()):s.kind==="max"?e.data.getTime()>s.value&&(a=this._getOrReturnCtx(e,a),l(a,{code:c.too_big,message:s.message,inclusive:!0,exact:!1,maximum:s.value,type:"date"}),r.dirty()):i.util.assertNever(s);return{status:r.value,value:new Date(e.data.getTime())}}_addCheck(e){return new $({...this._def,checks:[...this._def.checks,e]})}min(e,t){return this._addCheck({kind:"min",value:e.getTime(),message:m.toString(t)})}max(e,t){return this._addCheck({kind:"max",value:e.getTime(),message:m.toString(t)})}get minDate(){let e=null;for(const t of this._def.checks)t.kind==="min"&&(e===null||t.value>e)&&(e=t.value);return e!=null?new Date(e):null}get maxDate(){let e=null;for(const t of this._def.checks)t.kind==="max"&&(e===null||t.value<e)&&(e=t.value);return e!=null?new Date(e):null}}$.create=n=>new $({checks:[],coerce:n?.coerce||!1,typeName:i.ZodFirstPartyTypeKind.ZodDate,..._(n)});class le extends v{_parse(e){if(this._getType(e)!==u.symbol){const r=this._getOrReturnCtx(e);return l(r,{code:c.invalid_type,expected:u.symbol,received:r.parsedType}),p}return b(e.data)}}le.create=n=>new le({typeName:i.ZodFirstPartyTypeKind.ZodSymbol,..._(n)});class Y extends v{_parse(e){if(this._getType(e)!==u.undefined){const r=this._getOrReturnCtx(e);return l(r,{code:c.invalid_type,expected:u.undefined,received:r.parsedType}),p}return b(e.data)}}Y.create=n=>new Y({typeName:i.ZodFirstPartyTypeKind.ZodUndefined,..._(n)});class J extends v{_parse(e){if(this._getType(e)!==u.null){const r=this._getOrReturnCtx(e);return l(r,{code:c.invalid_type,expected:u.null,received:r.parsedType}),p}return b(e.data)}}J.create=n=>new J({typeName:i.ZodFirstPartyTypeKind.ZodNull,..._(n)});class z extends v{constructor(){super(...arguments),this._any=!0}_parse(e){return b(e.data)}}z.create=n=>new z({typeName:i.ZodFirstPartyTypeKind.ZodAny,..._(n)});class V extends v{constructor(){super(...arguments),this._unknown=!0}_parse(e){return b(e.data)}}V.create=n=>new V({typeName:i.ZodFirstPartyTypeKind.ZodUnknown,..._(n)});class O extends v{_parse(e){const t=this._getOrReturnCtx(e);return l(t,{code:c.invalid_type,expected:u.never,received:t.parsedType}),p}}O.create=n=>new O({typeName:i.ZodFirstPartyTypeKind.ZodNever,..._(n)});class fe extends v{_parse(e){if(this._getType(e)!==u.undefined){const r=this._getOrReturnCtx(e);return l(r,{code:c.invalid_type,expected:u.void,received:r.parsedType}),p}return b(e.data)}}fe.create=n=>new fe({typeName:i.ZodFirstPartyTypeKind.ZodVoid,..._(n)});class S extends v{_parse(e){const{ctx:t,status:r}=this._processInputParams(e),a=this._def;if(t.parsedType!==u.array)return l(t,{code:c.invalid_type,expected:u.array,received:t.parsedType}),p;if(a.exactLength!==null){const d=t.data.length>a.exactLength.value,o=t.data.length<a.exactLength.value;(d||o)&&(l(t,{code:d?c.too_big:c.too_small,minimum:o?a.exactLength.value:void 0,maximum:d?a.exactLength.value:void 0,type:"array",inclusive:!0,exact:!0,message:a.exactLength.message}),r.dirty())}if(a.minLength!==null&&t.data.length<a.minLength.value&&(l(t,{code:c.too_small,minimum:a.minLength.value,type:"array",inclusive:!0,exact:!1,message:a.minLength.message}),r.dirty()),a.maxLength!==null&&t.data.length>a.maxLength.value&&(l(t,{code:c.too_big,maximum:a.maxLength.value,type:"array",inclusive:!0,exact:!1,message:a.maxLength.message}),r.dirty()),t.common.async)return Promise.all([...t.data].map((d,o)=>a.type._parseAsync(new C(t,d,t.path,o)))).then(d=>k.mergeArray(r,d));const s=[...t.data].map((d,o)=>a.type._parseSync(new C(t,d,t.path,o)));return k.mergeArray(r,s)}get element(){return this._def.type}min(e,t){return new S({...this._def,minLength:{value:e,message:m.toString(t)}})}max(e,t){return new S({...this._def,maxLength:{value:e,message:m.toString(t)}})}length(e,t){return new S({...this._def,exactLength:{value:e,message:m.toString(t)}})}nonempty(e){return this.min(1,e)}}S.create=(n,e)=>new S({type:n,minLength:null,maxLength:null,exactLength:null,typeName:i.ZodFirstPartyTypeKind.ZodArray,..._(e)});function H(n){if(n instanceof g){const e={};for(const t in n.shape){const r=n.shape[t];e[t]=x.create(H(r))}return new g({...n._def,shape:()=>e})}else return n instanceof S?new S({...n._def,type:H(n.element)}):n instanceof x?x.create(H(n.unwrap())):n instanceof M?M.create(H(n.unwrap())):n instanceof E?E.create(n.items.map(e=>H(e))):n}class g extends v{constructor(){super(...arguments),this._cached=null,this.nonstrict=this.passthrough,this.augment=this.extend}_getCached(){if(this._cached!==null)return this._cached;const e=this._def.shape(),t=i.util.objectKeys(e);return this._cached={shape:e,keys:t}}_parse(e){if(this._getType(e)!==u.object){const f=this._getOrReturnCtx(e);return l(f,{code:c.invalid_type,expected:u.object,received:f.parsedType}),p}const{status:r,ctx:a}=this._processInputParams(e),{shape:s,keys:d}=this._getCached(),o=[];if(!(this._def.catchall instanceof O&&this._def.unknownKeys==="strip"))for(const f in a.data)d.includes(f)||o.push(f);const h=[];for(const f of d){const y=s[f],N=a.data[f];h.push({key:{status:"valid",value:f},value:y._parse(new C(a,N,a.path,f)),alwaysSet:f in a.data})}if(this._def.catchall instanceof O){const f=this._def.unknownKeys;if(f==="passthrough")for(const y of o)h.push({key:{status:"valid",value:y},value:{status:"valid",value:a.data[y]}});else if(f==="strict")o.length>0&&(l(a,{code:c.unrecognized_keys,keys:o}),r.dirty());else if(f!=="strip")throw new Error("Internal ZodObject error: invalid unknownKeys value.")}else{const f=this._def.catchall;for(const y of o){const N=a.data[y];h.push({key:{status:"valid",value:y},value:f._parse(new C(a,N,a.path,y)),alwaysSet:y in a.data})}}return a.common.async?Promise.resolve().then(async()=>{const f=[];for(const y of h){const N=await y.key,Zt=await y.value;f.push({key:N,value:Zt,alwaysSet:y.alwaysSet})}return f}).then(f=>k.mergeObjectSync(r,f)):k.mergeObjectSync(r,h)}get shape(){return this._def.shape()}strict(e){return m.errToObj,new g({...this._def,unknownKeys:"strict",...e!==void 0?{errorMap:(t,r)=>{var a,s,d,o;const h=(d=(s=(a=this._def).errorMap)===null||s===void 0?void 0:s.call(a,t,r).message)!==null&&d!==void 0?d:r.defaultError;return t.code==="unrecognized_keys"?{message:(o=m.errToObj(e).message)!==null&&o!==void 0?o:h}:{message:h}}}:{}})}strip(){return new g({...this._def,unknownKeys:"strip"})}passthrough(){return new g({...this._def,unknownKeys:"passthrough"})}extend(e){return new g({...this._def,shape:()=>({...this._def.shape(),...e})})}merge(e){return new g({unknownKeys:e._def.unknownKeys,catchall:e._def.catchall,shape:()=>({...this._def.shape(),...e._def.shape()}),typeName:i.ZodFirstPartyTypeKind.ZodObject})}setKey(e,t){return this.augment({[e]:t})}catchall(e){return new g({...this._def,catchall:e})}pick(e){const t={};return i.util.objectKeys(e).forEach(r=>{e[r]&&this.shape[r]&&(t[r]=this.shape[r])}),new g({...this._def,shape:()=>t})}omit(e){const t={};return i.util.objectKeys(this.shape).forEach(r=>{e[r]||(t[r]=this.shape[r])}),new g({...this._def,shape:()=>t})}deepPartial(){return H(this)}partial(e){const t={};return i.util.objectKeys(this.shape).forEach(r=>{const a=this.shape[r];e&&!e[r]?t[r]=a:t[r]=a.optional()}),new g({...this._def,shape:()=>t})}required(e){const t={};return i.util.objectKeys(this.shape).forEach(r=>{if(e&&!e[r])t[r]=this.shape[r];else{let s=this.shape[r];for(;s instanceof x;)s=s._def.innerType;t[r]=s}}),new g({...this._def,shape:()=>t})}keyof(){return $e(i.util.objectKeys(this.shape))}}g.create=(n,e)=>new g({shape:()=>n,unknownKeys:"strip",catchall:O.create(),typeName:i.ZodFirstPartyTypeKind.ZodObject,..._(e)}),g.strictCreate=(n,e)=>new g({shape:()=>n,unknownKeys:"strict",catchall:O.create(),typeName:i.ZodFirstPartyTypeKind.ZodObject,..._(e)}),g.lazycreate=(n,e)=>new g({shape:n,unknownKeys:"strip",catchall:O.create(),typeName:i.ZodFirstPartyTypeKind.ZodObject,..._(e)});class G extends v{_parse(e){const{ctx:t}=this._processInputParams(e),r=this._def.options;function a(s){for(const o of s)if(o.result.status==="valid")return o.result;for(const o of s)if(o.result.status==="dirty")return t.common.issues.push(...o.ctx.common.issues),o.result;const d=s.map(o=>new T(o.ctx.common.issues));return l(t,{code:c.invalid_union,unionErrors:d}),p}if(t.common.async)return Promise.all(r.map(async s=>{const d={...t,common:{...t.common,issues:[]},parent:null};return{result:await s._parseAsync({data:t.data,path:t.path,parent:d}),ctx:d}})).then(a);{let s;const d=[];for(const h of r){const f={...t,common:{...t.common,issues:[]},parent:null},y=h._parseSync({data:t.data,path:t.path,parent:f});if(y.status==="valid")return y;y.status==="dirty"&&!s&&(s={result:y,ctx:f}),f.common.issues.length&&d.push(f.common.issues)}if(s)return t.common.issues.push(...s.ctx.common.issues),s.result;const o=d.map(h=>new T(h));return l(t,{code:c.invalid_union,unionErrors:o}),p}}get options(){return this._def.options}}G.create=(n,e)=>new G({options:n,typeName:i.ZodFirstPartyTypeKind.ZodUnion,..._(e)});const j=n=>n instanceof ee?j(n.schema):n instanceof Z?j(n.innerType()):n instanceof te?[n.value]:n instanceof A?n.options:n instanceof ne?i.util.objectValues(n.enum):n instanceof re?j(n._def.innerType):n instanceof Y?[void 0]:n instanceof J?[null]:n instanceof x?[void 0,...j(n.unwrap())]:n instanceof M?[null,...j(n.unwrap())]:n instanceof ge||n instanceof ie?j(n.unwrap()):n instanceof ae?j(n._def.innerType):[];class he extends v{_parse(e){const{ctx:t}=this._processInputParams(e);if(t.parsedType!==u.object)return l(t,{code:c.invalid_type,expected:u.object,received:t.parsedType}),p;const r=this.discriminator,a=t.data[r],s=this.optionsMap.get(a);return s?t.common.async?s._parseAsync({data:t.data,path:t.path,parent:t}):s._parseSync({data:t.data,path:t.path,parent:t}):(l(t,{code:c.invalid_union_discriminator,options:Array.from(this.optionsMap.keys()),path:[r]}),p)}get discriminator(){return this._def.discriminator}get options(){return this._def.options}get optionsMap(){return this._def.optionsMap}static create(e,t,r){const a=new Map;for(const s of t){const d=j(s.shape[e]);if(!d.length)throw new Error(`A discriminator value for key \`${e}\` could not be extracted from all schema options`);for(const o of d){if(a.has(o))throw new Error(`Discriminator property ${String(e)} has duplicate value ${String(o)}`);a.set(o,s)}}return new he({typeName:i.ZodFirstPartyTypeKind.ZodDiscriminatedUnion,discriminator:e,options:t,optionsMap:a,..._(r)})}}function Ze(n,e){const t=P(n),r=P(e);if(n===e)return{valid:!0,data:n};if(t===u.object&&r===u.object){const a=i.util.objectKeys(e),s=i.util.objectKeys(n).filter(o=>a.indexOf(o)!==-1),d={...n,...e};for(const o of s){const h=Ze(n[o],e[o]);if(!h.valid)return{valid:!1};d[o]=h.data}return{valid:!0,data:d}}else if(t===u.array&&r===u.array){if(n.length!==e.length)return{valid:!1};const a=[];for(let s=0;s<n.length;s++){const d=n[s],o=e[s],h=Ze(d,o);if(!h.valid)return{valid:!1};a.push(h.data)}return{valid:!0,data:a}}else return t===u.date&&r===u.date&&+n==+e?{valid:!0,data:n}:{valid:!1}}class X extends v{_parse(e){const{status:t,ctx:r}=this._processInputParams(e),a=(s,d)=>{if(ye(s)||ye(d))return p;const o=Ze(s.value,d.value);return o.valid?((ve(s)||ve(d))&&t.dirty(),{status:t.value,value:o.data}):(l(r,{code:c.invalid_intersection_types}),p)};return r.common.async?Promise.all([this._def.left._parseAsync({data:r.data,path:r.path,parent:r}),this._def.right._parseAsync({data:r.data,path:r.path,parent:r})]).then(([s,d])=>a(s,d)):a(this._def.left._parseSync({data:r.data,path:r.path,parent:r}),this._def.right._parseSync({data:r.data,path:r.path,parent:r}))}}X.create=(n,e,t)=>new X({left:n,right:e,typeName:i.ZodFirstPartyTypeKind.ZodIntersection,..._(t)});class E extends v{_parse(e){const{status:t,ctx:r}=this._processInputParams(e);if(r.parsedType!==u.array)return l(r,{code:c.invalid_type,expected:u.array,received:r.parsedType}),p;if(r.data.length<this._def.items.length)return l(r,{code:c.too_small,minimum:this._def.items.length,inclusive:!0,exact:!1,type:"array"}),p;!this._def.rest&&r.data.length>this._def.items.length&&(l(r,{code:c.too_big,maximum:this._def.items.length,inclusive:!0,exact:!1,type:"array"}),t.dirty());const s=[...r.data].map((d,o)=>{const h=this._def.items[o]||this._def.rest;return h?h._parse(new C(r,d,r.path,o)):null}).filter(d=>!!d);return r.common.async?Promise.all(s).then(d=>k.mergeArray(t,d)):k.mergeArray(t,s)}get items(){return this._def.items}rest(e){return new E({...this._def,rest:e})}}E.create=(n,e)=>{if(!Array.isArray(n))throw new Error("You must pass an array of schemas to z.tuple([ ... ])");return new E({items:n,typeName:i.ZodFirstPartyTypeKind.ZodTuple,rest:null,..._(e)})};class Q extends v{get keySchema(){return this._def.keyType}get valueSchema(){return this._def.valueType}_parse(e){const{status:t,ctx:r}=this._processInputParams(e);if(r.parsedType!==u.object)return l(r,{code:c.invalid_type,expected:u.object,received:r.parsedType}),p;const a=[],s=this._def.keyType,d=this._def.valueType;for(const o in r.data)a.push({key:s._parse(new C(r,o,r.path,o)),value:d._parse(new C(r,r.data[o],r.path,o)),alwaysSet:o in r.data});return r.common.async?k.mergeObjectAsync(t,a):k.mergeObjectSync(t,a)}get element(){return this._def.valueType}static create(e,t,r){return t instanceof v?new Q({keyType:e,valueType:t,typeName:i.ZodFirstPartyTypeKind.ZodRecord,..._(r)}):new Q({keyType:w.create(),valueType:e,typeName:i.ZodFirstPartyTypeKind.ZodRecord,..._(t)})}}class me extends v{get keySchema(){return this._def.keyType}get valueSchema(){return this._def.valueType}_parse(e){const{status:t,ctx:r}=this._processInputParams(e);if(r.parsedType!==u.map)return l(r,{code:c.invalid_type,expected:u.map,received:r.parsedType}),p;const a=this._def.keyType,s=this._def.valueType,d=[...r.data.entries()].map(([o,h],f)=>({key:a._parse(new C(r,o,r.path,[f,"key"])),value:s._parse(new C(r,h,r.path,[f,"value"]))}));if(r.common.async){const o=new Map;return Promise.resolve().then(async()=>{for(const h of d){const f=await h.key,y=await h.value;if(f.status==="aborted"||y.status==="aborted")return p;(f.status==="dirty"||y.status==="dirty")&&t.dirty(),o.set(f.value,y.value)}return{status:t.value,value:o}})}else{const o=new Map;for(const h of d){const f=h.key,y=h.value;if(f.status==="aborted"||y.status==="aborted")return p;(f.status==="dirty"||y.status==="dirty")&&t.dirty(),o.set(f.value,y.value)}return{status:t.value,value:o}}}}me.create=(n,e,t)=>new me({valueType:e,keyType:n,typeName:i.ZodFirstPartyTypeKind.ZodMap,..._(t)});class D extends v{_parse(e){const{status:t,ctx:r}=this._processInputParams(e);if(r.parsedType!==u.set)return l(r,{code:c.invalid_type,expected:u.set,received:r.parsedType}),p;const a=this._def;a.minSize!==null&&r.data.size<a.minSize.value&&(l(r,{code:c.too_small,minimum:a.minSize.value,type:"set",inclusive:!0,exact:!1,message:a.minSize.message}),t.dirty()),a.maxSize!==null&&r.data.size>a.maxSize.value&&(l(r,{code:c.too_big,maximum:a.maxSize.value,type:"set",inclusive:!0,exact:!1,message:a.maxSize.message}),t.dirty());const s=this._def.valueType;function d(h){const f=new Set;for(const y of h){if(y.status==="aborted")return p;y.status==="dirty"&&t.dirty(),f.add(y.value)}return{status:t.value,value:f}}const o=[...r.data.values()].map((h,f)=>s._parse(new C(r,h,r.path,f)));return r.common.async?Promise.all(o).then(h=>d(h)):d(o)}min(e,t){return new D({...this._def,minSize:{value:e,message:m.toString(t)}})}max(e,t){return new D({...this._def,maxSize:{value:e,message:m.toString(t)}})}size(e,t){return this.min(e,t).max(e,t)}nonempty(e){return this.min(1,e)}}D.create=(n,e)=>new D({valueType:n,minSize:null,maxSize:null,typeName:i.ZodFirstPartyTypeKind.ZodSet,..._(e)});class U extends v{constructor(){super(...arguments),this.validate=this.implement}_parse(e){const{ctx:t}=this._processInputParams(e);if(t.parsedType!==u.function)return l(t,{code:c.invalid_type,expected:u.function,received:t.parsedType}),p;function r(o,h){return oe({data:o,path:t.path,errorMaps:[t.common.contextualErrorMap,t.schemaErrorMap,de(),L].filter(f=>!!f),issueData:{code:c.invalid_arguments,argumentsError:h}})}function a(o,h){return oe({data:o,path:t.path,errorMaps:[t.common.contextualErrorMap,t.schemaErrorMap,de(),L].filter(f=>!!f),issueData:{code:c.invalid_return_type,returnTypeError:h}})}const s={errorMap:t.common.contextualErrorMap},d=t.data;if(this._def.returns instanceof F){const o=this;return b(async function(...h){const f=new T([]),y=await o._def.args.parseAsync(h,s).catch(xe=>{throw f.addIssue(r(h,xe)),f}),N=await Reflect.apply(d,this,y);return await o._def.returns._def.type.parseAsync(N,s).catch(xe=>{throw f.addIssue(a(N,xe)),f})})}else{const o=this;return b(function(...h){const f=o._def.args.safeParse(h,s);if(!f.success)throw new T([r(h,f.error)]);const y=Reflect.apply(d,this,f.data),N=o._def.returns.safeParse(y,s);if(!N.success)throw new T([a(y,N.error)]);return N.data})}}parameters(){return this._def.args}returnType(){return this._def.returns}args(...e){return new U({...this._def,args:E.create(e).rest(V.create())})}returns(e){return new U({...this._def,returns:e})}implement(e){return this.parse(e)}strictImplement(e){return this.parse(e)}static create(e,t,r){return new U({args:e||E.create([]).rest(V.create()),returns:t||V.create(),typeName:i.ZodFirstPartyTypeKind.ZodFunction,..._(r)})}}class ee extends v{get schema(){return this._def.getter()}_parse(e){const{ctx:t}=this._processInputParams(e);return this._def.getter()._parse({data:t.data,path:t.path,parent:t})}}ee.create=(n,e)=>new ee({getter:n,typeName:i.ZodFirstPartyTypeKind.ZodLazy,..._(e)});class te extends v{_parse(e){if(e.data!==this._def.value){const t=this._getOrReturnCtx(e);return l(t,{received:t.data,code:c.invalid_literal,expected:this._def.value}),p}return{status:"valid",value:e.data}}get value(){return this._def.value}}te.create=(n,e)=>new te({value:n,typeName:i.ZodFirstPartyTypeKind.ZodLiteral,..._(e)});function $e(n,e){return new A({values:n,typeName:i.ZodFirstPartyTypeKind.ZodEnum,..._(e)})}class A extends v{constructor(){super(...arguments),ce.set(this,void 0)}_parse(e){if(typeof e.data!="string"){const t=this._getOrReturnCtx(e),r=this._def.values;return l(t,{expected:i.util.joinValues(r),received:t.parsedType,code:c.invalid_type}),p}if(_e(this,ce,"f")||Ie(this,ce,new Set(this._def.values),"f"),!_e(this,ce,"f").has(e.data)){const t=this._getOrReturnCtx(e),r=this._def.values;return l(t,{received:t.data,code:c.invalid_enum_value,options:r}),p}return b(e.data)}get options(){return this._def.values}get enum(){const e={};for(const t of this._def.values)e[t]=t;return e}get Values(){const e={};for(const t of this._def.values)e[t]=t;return e}get Enum(){const e={};for(const t of this._def.values)e[t]=t;return e}extract(e,t=this._def){return A.create(e,{...this._def,...t})}exclude(e,t=this._def){return A.create(this.options.filter(r=>!e.includes(r)),{...this._def,...t})}}ce=new WeakMap,A.create=$e;class ne extends v{constructor(){super(...arguments),ue.set(this,void 0)}_parse(e){const t=i.util.getValidEnumValues(this._def.values),r=this._getOrReturnCtx(e);if(r.parsedType!==u.string&&r.parsedType!==u.number){const a=i.util.objectValues(t);return l(r,{expected:i.util.joinValues(a),received:r.parsedType,code:c.invalid_type}),p}if(_e(this,ue,"f")||Ie(this,ue,new Set(i.util.getValidEnumValues(this._def.values)),"f"),!_e(this,ue,"f").has(e.data)){const a=i.util.objectValues(t);return l(r,{received:r.data,code:c.invalid_enum_value,options:a}),p}return b(e.data)}get enum(){return this._def.values}}ue=new WeakMap,ne.create=(n,e)=>new ne({values:n,typeName:i.ZodFirstPartyTypeKind.ZodNativeEnum,..._(e)});class F extends v{unwrap(){return this._def.type}_parse(e){const{ctx:t}=this._processInputParams(e);if(t.parsedType!==u.promise&&t.common.async===!1)return l(t,{code:c.invalid_type,expected:u.promise,received:t.parsedType}),p;const r=t.parsedType===u.promise?t.data:Promise.resolve(t.data);return b(r.then(a=>this._def.type.parseAsync(a,{path:t.path,errorMap:t.common.contextualErrorMap})))}}F.create=(n,e)=>new F({type:n,typeName:i.ZodFirstPartyTypeKind.ZodPromise,..._(e)});class Z extends v{innerType(){return this._def.schema}sourceType(){return this._def.schema._def.typeName===i.ZodFirstPartyTypeKind.ZodEffects?this._def.schema.sourceType():this._def.schema}_parse(e){const{status:t,ctx:r}=this._processInputParams(e),a=this._def.effect||null,s={addIssue:d=>{l(r,d),d.fatal?t.abort():t.dirty()},get path(){return r.path}};if(s.addIssue=s.addIssue.bind(s),a.type==="preprocess"){const d=a.transform(r.data,s);if(r.common.async)return Promise.resolve(d).then(async o=>{if(t.value==="aborted")return p;const h=await this._def.schema._parseAsync({data:o,path:r.path,parent:r});return h.status==="aborted"?p:h.status==="dirty"||t.value==="dirty"?K(h.value):h});{if(t.value==="aborted")return p;const o=this._def.schema._parseSync({data:d,path:r.path,parent:r});return o.status==="aborted"?p:o.status==="dirty"||t.value==="dirty"?K(o.value):o}}if(a.type==="refinement"){const d=o=>{const h=a.refinement(o,s);if(r.common.async)return Promise.resolve(h);if(h instanceof Promise)throw new Error("Async refinement encountered during synchronous parse operation. Use .parseAsync instead.");return o};if(r.common.async===!1){const o=this._def.schema._parseSync({data:r.data,path:r.path,parent:r});return o.status==="aborted"?p:(o.status==="dirty"&&t.dirty(),d(o.value),{status:t.value,value:o.value})}else return this._def.schema._parseAsync({data:r.data,path:r.path,parent:r}).then(o=>o.status==="aborted"?p:(o.status==="dirty"&&t.dirty(),d(o.value).then(()=>({status:t.value,value:o.value}))))}if(a.type==="transform")if(r.common.async===!1){const d=this._def.schema._parseSync({data:r.data,path:r.path,parent:r});if(!B(d))return d;const o=a.transform(d.value,s);if(o instanceof Promise)throw new Error("Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.");return{status:t.value,value:o}}else return this._def.schema._parseAsync({data:r.data,path:r.path,parent:r}).then(d=>B(d)?Promise.resolve(a.transform(d.value,s)).then(o=>({status:t.value,value:o})):d);i.util.assertNever(a)}}Z.create=(n,e,t)=>new Z({schema:n,typeName:i.ZodFirstPartyTypeKind.ZodEffects,effect:e,..._(t)}),Z.createWithPreprocess=(n,e,t)=>new Z({schema:e,effect:{type:"preprocess",transform:n},typeName:i.ZodFirstPartyTypeKind.ZodEffects,..._(t)});class x extends v{_parse(e){return this._getType(e)===u.undefined?b(void 0):this._def.innerType._parse(e)}unwrap(){return this._def.innerType}}x.create=(n,e)=>new x({innerType:n,typeName:i.ZodFirstPartyTypeKind.ZodOptional,..._(e)});class M extends v{_parse(e){return this._getType(e)===u.null?b(null):this._def.innerType._parse(e)}unwrap(){return this._def.innerType}}M.create=(n,e)=>new M({innerType:n,typeName:i.ZodFirstPartyTypeKind.ZodNullable,..._(e)});class re extends v{_parse(e){const{ctx:t}=this._processInputParams(e);let r=t.data;return t.parsedType===u.undefined&&(r=this._def.defaultValue()),this._def.innerType._parse({data:r,path:t.path,parent:t})}removeDefault(){return this._def.innerType}}re.create=(n,e)=>new re({innerType:n,typeName:i.ZodFirstPartyTypeKind.ZodDefault,defaultValue:typeof e.default=="function"?e.default:()=>e.default,..._(e)});class ae extends v{_parse(e){const{ctx:t}=this._processInputParams(e),r={...t,common:{...t.common,issues:[]}},a=this._def.innerType._parse({data:r.data,path:r.path,parent:{...r}});return W(a)?a.then(s=>({status:"valid",value:s.status==="valid"?s.value:this._def.catchValue({get error(){return new T(r.common.issues)},input:r.data})})):{status:"valid",value:a.status==="valid"?a.value:this._def.catchValue({get error(){return new T(r.common.issues)},input:r.data})}}removeCatch(){return this._def.innerType}}ae.create=(n,e)=>new ae({innerType:n,typeName:i.ZodFirstPartyTypeKind.ZodCatch,catchValue:typeof e.catch=="function"?e.catch:()=>e.catch,..._(e)});class pe extends v{_parse(e){if(this._getType(e)!==u.nan){const r=this._getOrReturnCtx(e);return l(r,{code:c.invalid_type,expected:u.nan,received:r.parsedType}),p}return{status:"valid",value:e.data}}}pe.create=n=>new pe({typeName:i.ZodFirstPartyTypeKind.ZodNaN,..._(n)});const Ve=Symbol("zod_brand");class ge extends v{_parse(e){const{ctx:t}=this._processInputParams(e),r=t.data;return this._def.type._parse({data:r,path:t.path,parent:t})}unwrap(){return this._def.type}}class se extends v{_parse(e){const{status:t,ctx:r}=this._processInputParams(e);if(r.common.async)return(async()=>{const s=await this._def.in._parseAsync({data:r.data,path:r.path,parent:r});return s.status==="aborted"?p:s.status==="dirty"?(t.dirty(),K(s.value)):this._def.out._parseAsync({data:s.value,path:r.path,parent:r})})();{const a=this._def.in._parseSync({data:r.data,path:r.path,parent:r});return a.status==="aborted"?p:a.status==="dirty"?(t.dirty(),{status:"dirty",value:a.value}):this._def.out._parseSync({data:a.value,path:r.path,parent:r})}}static create(e,t){return new se({in:e,out:t,typeName:i.ZodFirstPartyTypeKind.ZodPipeline})}}class ie extends v{_parse(e){const t=this._def.innerType._parse(e),r=a=>(B(a)&&(a.value=Object.freeze(a.value)),a);return W(t)?t.then(a=>r(a)):r(t)}unwrap(){return this._def.innerType}}ie.create=(n,e)=>new ie({innerType:n,typeName:i.ZodFirstPartyTypeKind.ZodReadonly,..._(e)});function we(n,e={},t){return n?z.create().superRefine((r,a)=>{var s,d;if(!n(r)){const o=typeof e=="function"?e(r):typeof e=="string"?{message:e}:e,h=(d=(s=o.fatal)!==null&&s!==void 0?s:t)!==null&&d!==void 0?d:!0,f=typeof o=="string"?{message:o}:o;a.addIssue({code:"custom",...f,fatal:h})}}):z.create()}const De={object:g.lazycreate};i.ZodFirstPartyTypeKind=void 0,function(n){n.ZodString="ZodString",n.ZodNumber="ZodNumber",n.ZodNaN="ZodNaN",n.ZodBigInt="ZodBigInt",n.ZodBoolean="ZodBoolean",n.ZodDate="ZodDate",n.ZodSymbol="ZodSymbol",n.ZodUndefined="ZodUndefined",n.ZodNull="ZodNull",n.ZodAny="ZodAny",n.ZodUnknown="ZodUnknown",n.ZodNever="ZodNever",n.ZodVoid="ZodVoid",n.ZodArray="ZodArray",n.ZodObject="ZodObject",n.ZodUnion="ZodUnion",n.ZodDiscriminatedUnion="ZodDiscriminatedUnion",n.ZodIntersection="ZodIntersection",n.ZodTuple="ZodTuple",n.ZodRecord="ZodRecord",n.ZodMap="ZodMap",n.ZodSet="ZodSet",n.ZodFunction="ZodFunction",n.ZodLazy="ZodLazy",n.ZodLiteral="ZodLiteral",n.ZodEnum="ZodEnum",n.ZodEffects="ZodEffects",n.ZodNativeEnum="ZodNativeEnum",n.ZodOptional="ZodOptional",n.ZodNullable="ZodNullable",n.ZodDefault="ZodDefault",n.ZodCatch="ZodCatch",n.ZodPromise="ZodPromise",n.ZodBranded="ZodBranded",n.ZodPipeline="ZodPipeline",n.ZodReadonly="ZodReadonly"}(i.ZodFirstPartyTypeKind||(i.ZodFirstPartyTypeKind={}));const Le=(n,e={message:`Input not instance of ${n.name}`})=>we(t=>t instanceof n,e),Se=w.create,Ne=R.create,Ke=pe.create,ze=I.create,Ee=q.create,Ue=$.create,Fe=le.create,Be=Y.create,We=J.create,qe=z.create,Ye=V.create,Je=O.create,He=fe.create,Ge=S.create,Xe=g.create,Qe=g.strictCreate,et=G.create,tt=he.create,nt=X.create,rt=E.create,at=Q.create,st=me.create,it=D.create,dt=U.create,ot=ee.create,ct=te.create,ut=A.create,lt=ne.create,ft=F.create,ke=Z.create,ht=x.create,mt=M.create,pt=Z.createWithPreprocess,yt=se.create,vt=()=>Se().optional(),_t=()=>Ne().optional(),gt=()=>Ee().optional(),kt={string:n=>w.create({...n,coerce:!0}),number:n=>R.create({...n,coerce:!0}),boolean:n=>q.create({...n,coerce:!0}),bigint:n=>I.create({...n,coerce:!0}),date:n=>$.create({...n,coerce:!0})},bt=p;var Tt=Object.freeze({__proto__:null,defaultErrorMap:L,setErrorMap:Pe,getErrorMap:de,makeIssue:oe,EMPTY_PATH:Re,addIssueToContext:l,ParseStatus:k,INVALID:p,DIRTY:K,OK:b,isAborted:ye,isDirty:ve,isValid:B,isAsync:W,get util(){return i.util},get objectUtil(){return i.objectUtil},ZodParsedType:u,getParsedType:P,ZodType:v,datetimeRegex:Te,ZodString:w,ZodNumber:R,ZodBigInt:I,ZodBoolean:q,ZodDate:$,ZodSymbol:le,ZodUndefined:Y,ZodNull:J,ZodAny:z,ZodUnknown:V,ZodNever:O,ZodVoid:fe,ZodArray:S,ZodObject:g,ZodUnion:G,ZodDiscriminatedUnion:he,ZodIntersection:X,ZodTuple:E,ZodRecord:Q,ZodMap:me,ZodSet:D,ZodFunction:U,ZodLazy:ee,ZodLiteral:te,ZodEnum:A,ZodNativeEnum:ne,ZodPromise:F,ZodEffects:Z,ZodTransformer:Z,ZodOptional:x,ZodNullable:M,ZodDefault:re,ZodCatch:ae,ZodNaN:pe,BRAND:Ve,ZodBranded:ge,ZodPipeline:se,ZodReadonly:ie,custom:we,Schema:v,ZodSchema:v,late:De,get ZodFirstPartyTypeKind(){return i.ZodFirstPartyTypeKind},coerce:kt,any:qe,array:Ge,bigint:ze,boolean:Ee,date:Ue,discriminatedUnion:tt,effect:ke,enum:ut,function:dt,instanceof:Le,intersection:nt,lazy:ot,literal:ct,map:st,nan:Ke,nativeEnum:lt,never:Je,null:We,nullable:mt,number:Ne,object:Xe,oboolean:gt,onumber:_t,optional:ht,ostring:vt,pipeline:yt,preprocess:pt,promise:ft,record:at,set:it,strictObject:Qe,string:Se,symbol:Fe,transformer:ke,tuple:rt,undefined:Be,union:et,unknown:Ye,void:He,NEVER:bt,ZodIssueCode:c,quotelessJson:Ce,ZodError:T});i.BRAND=Ve,i.DIRTY=K,i.EMPTY_PATH=Re,i.INVALID=p,i.NEVER=bt,i.OK=b,i.ParseStatus=k,i.Schema=v,i.ZodAny=z,i.ZodArray=S,i.ZodBigInt=I,i.ZodBoolean=q,i.ZodBranded=ge,i.ZodCatch=ae,i.ZodDate=$,i.ZodDefault=re,i.ZodDiscriminatedUnion=he,i.ZodEffects=Z,i.ZodEnum=A,i.ZodError=T,i.ZodFunction=U,i.ZodIntersection=X,i.ZodIssueCode=c,i.ZodLazy=ee,i.ZodLiteral=te,i.ZodMap=me,i.ZodNaN=pe,i.ZodNativeEnum=ne,i.ZodNever=O,i.ZodNull=J,i.ZodNullable=M,i.ZodNumber=R,i.ZodObject=g,i.ZodOptional=x,i.ZodParsedType=u,i.ZodPipeline=se,i.ZodPromise=F,i.ZodReadonly=ie,i.ZodRecord=Q,i.ZodSchema=v,i.ZodSet=D,i.ZodString=w,i.ZodSymbol=le,i.ZodTransformer=Z,i.ZodTuple=E,i.ZodType=v,i.ZodUndefined=Y,i.ZodUnion=G,i.ZodUnknown=V,i.ZodVoid=fe,i.addIssueToContext=l,i.any=qe,i.array=Ge,i.bigint=ze,i.boolean=Ee,i.coerce=kt,i.custom=we,i.date=Ue,i.datetimeRegex=Te,i.default=Tt,i.defaultErrorMap=L,i.discriminatedUnion=tt,i.effect=ke,i.enum=ut,i.function=dt,i.getErrorMap=de,i.getParsedType=P,i.instanceof=Le,i.intersection=nt,i.isAborted=ye,i.isAsync=W,i.isDirty=ve,i.isValid=B,i.late=De,i.lazy=ot,i.literal=ct,i.makeIssue=oe,i.map=st,i.nan=Ke,i.nativeEnum=lt,i.never=Je,i.null=We,i.nullable=mt,i.number=Ne,i.object=Xe,i.oboolean=gt,i.onumber=_t,i.optional=ht,i.ostring=vt,i.pipeline=yt,i.preprocess=pt,i.promise=ft,i.quotelessJson=Ce,i.record=at,i.set=it,i.setErrorMap=Pe,i.strictObject=Qe,i.string=Se,i.symbol=Fe,i.transformer=ke,i.tuple=rt,i.undefined=Be,i.union=et,i.unknown=Ye,i.void=He,i.z=Tt,Object.defineProperty(i,"__esModule",{value:!0})});
+
+</script>
+<script>
+(function(){
+"use strict";
+/* ======================================================================
+   CarCost AI — MVP в одном файле.
+   Слои (как в плановой Next.js-структуре):
+   lib/format · lib/storage · lib/validation (Zod) · server/auth
+   domain/calc (все бизнес-расчёты) · domain/plans · services/ai
+   services/billing · ui/components · ui/pages
+   ====================================================================== */
+const z=window.Zod;
+
+/* ---------------- lib/format ---------------- */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const round2=n=>Math.round(n*100)/100;
+const eur=(n,d=0)=>(isFinite(n)?n:0).toLocaleString("ru-RU",{minimumFractionDigits:d,maximumFractionDigits:d})+" €";
+const eur2=n=>eur(n,2);
+const numf=(n,d=0)=>(isFinite(n)?n:0).toLocaleString("ru-RU",{minimumFractionDigits:d,maximumFractionDigits:d});
+const pad=n=>String(n).padStart(2,"0");
+const todayISO=()=>{ const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
+const mkey=d=>{ if(typeof d==="string") return d.slice(0,7); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; };
+const MONTHS=["январь","февраль","март","апрель","май","июнь","июль","август","сентябрь","октябрь","ноябрь","декабрь"];
+const MON_S=["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+const MONTHS_DAT=["январю","февралю","марту","апрелю","маю","июню","июлю","августу","сентябрю","октябрю","ноябрю","декабрю"];
+const MONTHS_PREP=["январе","феврале","марте","апреле","мае","июне","июле","августе","сентябре","октябре","ноябре","декабре"];
+const mNum=k=>+k.split("-")[1]-1;
+const MONTHS_GEN=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+const mLabel=(k,short)=>{ const [y,m]=k.split("-").map(Number); return short?MON_S[m-1]:MONTHS[m-1]+" "+y; };
+const mLabelCap=k=>{ const s=mLabel(k); return s[0].toUpperCase()+s.slice(1); };
+const dLabel=iso=>{ const [y,m,d]=iso.split("-").map(Number); return `${d} ${MONTHS_GEN[m-1]} ${y}`; };
+const addMonths=(k,n)=>{ const [y,m]=k.split("-").map(Number); const d=new Date(y,m-1+n,1); return mkey(d); };
+const plural=(n,a,b,c)=>{ const m10=n%10,m100=n%100; return m10===1&&m100!==11?a:(m10>=2&&m10<=4&&(m100<10||m100>=20)?b:c); };
+
+/* ---------------- icons (inline, stroke) ---------------- */
+const IC={
+  car:'<path d="M5 17h14M5 17a2 2 0 1 0 4 0M15 17a2 2 0 1 0 4 0M3 17v-5l2-5h14l2 5v5M3 12h18"/>',
+  home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  chart:'<path d="M3 3v18h18M7 15l4-4 3 3 6-6"/>',
+  calc:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/>',
+  spark:'<path d="M12 3l1.8 4.9L19 9.7l-4.2 3.2 1.5 5.1L12 15l-4.3 3 1.5-5.1L5 9.7l5.2-1.8z"/>',
+  crown:'<path d="M3 7l4 4 5-7 5 7 4-4-2 12H5z"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>',
+  check:'<path d="M5 12l5 5L20 7"/>',
+  alert:'<path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  up:'<path d="M7 17L17 7M9 7h8v8"/>',
+  down:'<path d="M7 7l10 10M17 9v8H9"/>',
+  send:'<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>',
+  lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+  more:'<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>',
+  road:'<path d="M4 21L8 3M20 21L16 3M12 5v2M12 11v2M12 17v2"/>',
+  gauge:'<path d="M12 14l4-4M3.3 16A9 9 0 1 1 20.7 16"/>',
+  fuel:'<path d="M3 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16M3 21h11M3 11h11M14 8h2a2 2 0 0 1 2 2v6a1.5 1.5 0 0 0 3 0V9l-3-3"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  parking:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>',
+  wrench:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+  hammer:'<path d="M15 12l-8.5 8.5a2.1 2.1 0 0 1-3-3L12 9M17.6 15L22 10.6M20.9 11.7l-1.3-1.3a2 2 0 0 1-.6-1.4V7.6l-2.8-2.8a5 5 0 0 0-7-.1l3.9 4a2 2 0 0 1 .6 1.4v1.3l1.4 1.4"/>',
+  drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  receipt:'<path d="M5 3v18l3-2 2 2 2-2 2 2 2-2 3 2V3l-3 2-2-2-2 2-2-2-2 2z"/><path d="M9 9h6M9 13h6"/>',
+  tire:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6M12 15v6M3 12h6M15 12h6"/>',
+  bank:'<path d="M3 10h18M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 21h18M12 3l9 5H3z"/>',
+  toll:'<path d="M3 21V9l9-6 9 6v12M9 21v-6h6v6"/>',
+  cog:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+  box:'<path d="M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8"/>',
+  bolt:'<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  trend:'<path d="M3 17l6-6 4 4 8-8M15 7h6v6"/>',
+  filter:'<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
+  table:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>',
+  bot:'<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 13h.01M15 13h.01M9 17h6"/>'
+};
+const ic=(n,cls="")=>`<svg class="i ${cls}" viewBox="0 0 24 24" aria-hidden="true">${IC[n]||""}</svg>`;
+
+/* ---------------- lib/storage (localStorage, память как запасной вариант) ---------------- */
+const mem={}; let persistent=true;
+const store={
+  get(k,d){ try{ const v=localStorage.getItem(k); return v==null?(k in mem?mem[k]:d):JSON.parse(v); }catch(e){ persistent=false; return k in mem?mem[k]:d; } },
+  set(k,v){ mem[k]=v; try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){ persistent=false; } },
+  del(k){ delete mem[k]; try{ localStorage.removeItem(k); }catch(e){} }
+};
+
+/* ---------------- lib/validation (Zod) ---------------- */
+const FUELS=["Бензин","Дизель","Гибрид","Электро","Газ"];
+const GEARS=["Автомат","Механика","Робот","Вариатор"];
+const CATS={
+  fuel:{n:"Топливо",i:"fuel"}, insurance:{n:"Страховка",i:"shield"}, parking:{n:"Парковка",i:"parking"}, service:{n:"Обслуживание",i:"wrench"},
+  repair:{n:"Ремонт",i:"hammer"}, wash:{n:"Мойка",i:"drop"}, tax:{n:"Налоги",i:"receipt"}, tires:{n:"Шины",i:"tire"},
+  loan:{n:"Кредит / лизинг",i:"bank"}, toll:{n:"Платные дороги",i:"toll"}, parts:{n:"Запчасти",i:"cog"}, other:{n:"Прочее",i:"box"}
+};
+const CAT_KEYS=Object.keys(CATS);
+const Schemas={
+  register:z.object({
+    name:z.string().trim().min(2,"Имя: минимум 2 символа").max(40,"Имя: максимум 40 символов"),
+    email:z.string().trim().toLowerCase().email("Введите корректный email"),
+    password:z.string().min(8,"Пароль: минимум 8 символов").max(100,"Слишком длинный пароль")
+  }),
+  login:z.object({ email:z.string().trim().toLowerCase().email("Введите корректный email"), password:z.string().min(1,"Введите пароль") }),
+  car:z.object({
+    brand:z.string().trim().min(1,"Укажите марку").max(30),
+    model:z.string().trim().min(1,"Укажите модель").max(40),
+    year:z.coerce.number({invalid_type_error:"Год числом"}).int("Год целым числом").min(1950,"Не раньше 1950").max(new Date().getFullYear()+1,"Год из будущего"),
+    fuel:z.enum(FUELS,{errorMap:()=>({message:"Выберите тип топлива"})}),
+    gearbox:z.enum(GEARS,{errorMap:()=>({message:"Выберите коробку"})}),
+    mileage:z.coerce.number({invalid_type_error:"Пробег числом"}).int("Целым числом").min(0,"Не меньше 0").max(2000000,"Слишком большой пробег"),
+    consumption:z.coerce.number({invalid_type_error:"Расход числом"}).min(0.5,"Слишком маленький расход").max(50,"Слишком большой расход"),
+    monthlyKm:z.coerce.number({invalid_type_error:"Пробег числом"}).int("Целым числом").min(1,"Минимум 1 км").max(20000,"Максимум 20 000 км"),
+    fuelPrice:z.coerce.number({invalid_type_error:"Цена числом"}).min(0.05,"Укажите цену").max(10,"Слишком высокая цена")
+  }),
+  expense:z.object({
+    carId:z.string().min(1,"Выберите автомобиль"),
+    category:z.enum(CAT_KEYS,{errorMap:()=>({message:"Выберите категорию"})}),
+    amount:z.coerce.number({invalid_type_error:"Сумма числом"}).positive("Сумма больше нуля").max(1000000,"Слишком большая сумма"),
+    date:z.string().regex(/^\d{4}-\d{2}-\d{2}$/,"Укажите дату").refine(v=>v<=todayISO(),"Дата не может быть в будущем"),
+    odometer:z.union([z.literal(""),z.coerce.number().int("Целым числом").min(0).max(2000000)]).optional(),
+    liters:z.union([z.literal(""),z.coerce.number().positive("Больше нуля").max(500)]).optional(),
+    note:z.string().trim().max(140,"Максимум 140 символов").optional()
+  }),
+  calc:z.object({
+    km:z.coerce.number().min(0).max(20000), cons:z.coerce.number().min(0).max(50), price:z.coerce.number().min(0).max(10),
+    insurance:z.coerce.number().min(0).max(100000), service:z.coerce.number().min(0).max(100000), parking:z.coerce.number().min(0).max(100000),
+    tax:z.coerce.number().min(0).max(100000), loan:z.coerce.number().min(0).max(100000)
+  }),
+  aiSettings:z.object({ provider:z.enum(["mock","openai","anthropic"]), key:z.string().trim().max(300), model:z.string().trim().max(80) })
+    .refine(v=>v.provider==="mock"||v.key.length>=10,{message:"Вставьте API-ключ",path:["key"]})
+};
+const fieldErrors=err=>{ const o={}; for(const is of err.issues){ const k=is.path[0]||"_"; if(!o[k]) o[k]=is.message; } return o; };
+
+/* ---------------- server/auth (локальная реализация; API-роуты для Auth.js — в комментариях) ----------------
+   Продакшн: Auth.js (Credentials + email) → Prisma (User, Car, Expense, Subscription, AiUsage) → PostgreSQL.
+   Здесь: пользователи и их данные хранятся в браузере, каждый видит только свой раздел cc:data:<userId>. */
+async function hashPass(pw,salt){
+  try{ const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(salt+":"+pw)); return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join(""); }
+  catch(e){ let h=5381; const s=salt+":"+pw; for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))|0; return "f"+(h>>>0).toString(16); }
+}
+const Auth={
+  users(){ return store.get("cc:users",[]); },
+  current(){ const id=store.get("cc:session",null); return id?this.users().find(u=>u.id===id)||null:null; },
+  async register(inp){
+    const r=Schemas.register.safeParse(inp); if(!r.success) return {errors:fieldErrors(r.error)};
+    const users=this.users(); if(users.some(u=>u.email===r.data.email)) return {errors:{email:"Пользователь с таким email уже есть"}};
+    const salt=uid(); const u={id:uid(),name:r.data.name,email:r.data.email,salt,hash:await hashPass(r.data.password,salt),createdAt:Date.now()};
+    users.push(u); store.set("cc:users",users); store.set("cc:session",u.id); Data.init(u.id); return {user:u};
+  },
+  async login(inp){
+    const r=Schemas.login.safeParse(inp); if(!r.success) return {errors:fieldErrors(r.error)};
+    const u=this.users().find(x=>x.email===r.data.email);
+    if(!u||u.hash!==await hashPass(r.data.password,u.salt)) return {errors:{password:"Неверный email или пароль"}};
+    store.set("cc:session",u.id); return {user:u};
+  },
+  logout(){ store.del("cc:session"); },
+  update(id,patch){ const users=this.users(); const i=users.findIndex(u=>u.id===id); if(i>=0){ users[i]={...users[i],...patch}; store.set("cc:users",users); } },
+  remove(id){ store.set("cc:users",this.users().filter(u=>u.id!==id)); store.del("cc:data:"+id); store.del("cc:session"); }
+};
+
+/* ---------------- data repository (per user) ---------------- */
+const Data={
+  key(){ return "cc:data:"+ME.id; },
+  blank(){ return {cars:[],expenses:[],activeCar:null,plan:"free",planSince:null,aiUsage:{},chat:[],ai:{provider:"mock",key:"",model:""},theme:"system"}; },
+  init(id){ if(!store.get("cc:data:"+id,null)) store.set("cc:data:"+id,this.blank()); },
+  get(){ return Object.assign(this.blank(),store.get(this.key(),{})); },
+  save(d){ store.set(this.key(),d); },
+  mutate(fn){ const d=this.get(); fn(d); this.save(d); return d; }
+};
+
+/* ---------------- domain/plans & services/billing ---------------- */
+const PLANS={
+  free:{id:"free",name:"Бесплатный",price:0,cars:1,aiPerMonth:5,historyMonths:6,forecast:false,advanced:false},
+  pro:{id:"pro",name:"AI Pro",price:9.99,cars:Infinity,aiPerMonth:Infinity,historyMonths:Infinity,forecast:true,advanced:true}
+};
+const Plan={
+  get(d=Data.get()){ return PLANS[d.plan]||PLANS.free; },
+  aiUsed(d=Data.get()){ return d.aiUsage[mkey(new Date())]||0; },
+  aiLeft(d=Data.get()){ const p=this.get(d); return p.aiPerMonth===Infinity?Infinity:Math.max(0,p.aiPerMonth-this.aiUsed(d)); },
+  canAddCar(d=Data.get()){ return d.cars.length<this.get(d).cars; },
+  historyFrom(d=Data.get()){ const p=this.get(d); return p.historyMonths===Infinity?"0000-00":addMonths(mkey(new Date()),-(p.historyMonths-1)); }
+};
+const Billing={
+  stripeConnected:false,
+  /* Stripe: POST /api/billing/checkout {plan:"pro"} → Checkout Session → redirect.
+     Webhook /api/billing/webhook (checkout.session.completed, customer.subscription.updated/deleted)
+     обновляет Subscription в БД. Пока Stripe не подключён, работает тестовая подписка ниже. */
+  async subscribe(){ Data.mutate(d=>{ d.plan="pro"; d.planSince=Date.now(); }); },
+  async cancel(){ Data.mutate(d=>{ d.plan="free"; d.planSince=null; }); }
+};
+
+/* ---------------- domain/calc — все бизнес-расчёты ---------------- */
+const Calc={
+  forCar(list,carId){ return carId==="all"?list:list.filter(e=>e.carId===carId); },
+  sum(list){ return round2(list.reduce((a,e)=>a+e.amount,0)); },
+  inMonth(list,k){ return list.filter(e=>e.date.startsWith(k)); },
+  inYear(list,y){ return list.filter(e=>e.date.startsWith(String(y))); },
+  monthSeries(list,n,end=mkey(new Date())){ const out=[]; for(let i=n-1;i>=0;i--){ const k=addMonths(end,-i); out.push({key:k,label:mLabel(k,true),total:this.sum(this.inMonth(list,k))}); } return out; },
+  firstMonth(list){ return list.length?list.reduce((m,e)=>e.date<m?e.date:m,list[0].date).slice(0,7):null; },
+  /* средние расходы в месяц: полные месяцы за последние 12 (текущий неполный месяц не учитываем, если есть история) */
+  avgMonthly(list){
+    const first=this.firstMonth(list); if(!first) return 0; const cur=mkey(new Date());
+    let months=[]; for(let i=1;i<=12;i++){ const k=addMonths(cur,-i); if(k>=first) months.push(k); }
+    if(!months.length) return this.sum(this.inMonth(list,cur));
+    return round2(months.reduce((a,k)=>a+this.sum(this.inMonth(list,k)),0)/months.length);
+  },
+  byCategory(list){ const t={}; list.forEach(e=>t[e.category]=(t[e.category]||0)+e.amount); const total=Object.values(t).reduce((a,b)=>a+b,0);
+    return Object.entries(t).map(([cat,v])=>({cat,total:round2(v),share:total?v/total:0})).sort((a,b)=>b.total-a.total); },
+  mom(list,k=mkey(new Date())){ const cur=this.sum(this.inMonth(list,k)), prev=this.sum(this.inMonth(list,addMonths(k,-1))); return {cur,prev,diff:round2(cur-prev),pct:prev?(cur-prev)/prev:null}; },
+  /* пробег по месяцу: из показаний одометра в расходах, иначе — средний пробег авто */
+  kmInMonth(list,car,k){
+    const pts=list.filter(e=>e.carId===car.id&&e.odometer).map(e=>({d:e.date,o:e.odometer})).sort((a,b)=>a.d<b.d?-1:1);
+    const before=pts.filter(p=>p.d<k+"-01").pop(), inm=pts.filter(p=>p.d.startsWith(k));
+    if(before&&inm.length){ const km=inm[inm.length-1].o-before.o; if(km>0) return km; }
+    return car.monthlyKm;
+  },
+  costPerKm(total,km){ return km>0?total/km:0; },
+  cpkSeries(list,cars,n){ return this.monthSeries(list,n).map(m=>{ const km=cars.reduce((a,c)=>a+this.kmInMonth(list,c,m.key),0); return {...m,km,cpk:this.costPerKm(m.total,km)}; }); },
+  fuel(list,car){
+    const f=list.filter(e=>e.category==="fuel"&&(!car||e.carId===car.id));
+    const withL=f.filter(e=>e.liters); const liters=withL.reduce((a,e)=>a+e.liters,0), spent=withL.reduce((a,e)=>a+e.amount,0);
+    const price=liters?spent/liters:null;
+    let cons=null; if(car){ const pts=f.filter(e=>e.odometer&&e.liters).sort((a,b)=>a.odometer-b.odometer);
+      if(pts.length>=2){ const km=pts[pts.length-1].odometer-pts[0].odometer; const l=pts.slice(1).reduce((a,e)=>a+e.liters,0); if(km>0) cons=l/km*100; } }
+    return {total:this.sum(f),liters,price,cons};
+  },
+  /* прогноз на год: средняя за 6 полных месяцев × 12, диапазон ± стандартное отклонение */
+  forecast(list){
+    const cur=mkey(new Date()); const ks=[1,2,3,4,5,6].map(i=>addMonths(cur,-i)).filter(k=>this.inMonth(list,k).length);
+    if(ks.length<3) return null; const vals=ks.map(k=>this.sum(this.inMonth(list,k))); const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+    const sd=Math.sqrt(vals.reduce((a,v)=>a+(v-avg)**2,0)/vals.length);
+    return {monthly:avg,year:avg*12,low:Math.max(0,(avg-sd)*12),high:(avg+sd)*12,basis:ks.length};
+  },
+  /* калькулятор стоимости владения. insurance и tax — в год, остальное — в месяц */
+  ownership(i){
+    const fuel=i.km*i.cons/100*i.price; const parts={fuel,insurance:i.insurance/12,service:i.service,parking:i.parking,tax:i.tax/12,loan:i.loan};
+    const month=Object.values(parts).reduce((a,b)=>a+b,0); return {parts,month,year:month*12,perKm:i.km>0?month/i.km:0};
+  },
+  simulate(base,change){ const a=this.ownership(base), b=this.ownership({...base,...change}); return {base:a,next:b,dMonth:b.month-a.month,dYear:b.year-a.year,dKm:b.perKm-a.perKm}; },
+  compareMonths(list,a,b){ const A=this.inMonth(list,a), B=this.inMonth(list,b);
+    return CAT_KEYS.map(c=>({cat:c,a:this.sum(A.filter(e=>e.category===c)),b:this.sum(B.filter(e=>e.category===c))})).filter(r=>r.a||r.b).map(r=>({...r,diff:round2(r.b-r.a)})); },
+  /* базовые значения калькулятора из реальных данных: средние по категориям за 3 полных месяца */
+  calcDefaults(list,car){
+    const cur=mkey(new Date()); const ks=[1,2,3].map(i=>addMonths(cur,-i)); const L=list.filter(e=>!car||e.carId===car.id);
+    const avg=c=>{ const v=ks.map(k=>this.sum(this.inMonth(L,k).filter(e=>e.category===c))); return round2(v.reduce((a,b)=>a+b,0)/ks.length); };
+    const yr=c=>this.sum(L.filter(e=>e.category===c&&e.date>=addMonths(cur,-11)+"-01"));
+    const f=this.fuel(L,car);
+    return {km:car?car.monthlyKm:1000,cons:car?car.consumption:7,price:round2(f.price||(car?car.fuelPrice:1.8)),insurance:round2(avg("insurance")*12),service:avg("service"),parking:avg("parking"),tax:yr("tax"),loan:avg("loan")};
+  }
+};
+
+/* ---------------- demo data ---------------- */
+function demoData(){
+  const car={id:uid(),brand:"BMW",model:"320i",year:2021,fuel:"Бензин",gearbox:"Автомат",mileage:64300,consumption:7.4,monthlyKm:1200,fuelPrice:1.84,createdAt:Date.now()};
+  const cur=mkey(new Date()); const today=new Date().getDate(); const ex=[];
+  const fuelBy=[172,165,158,176,190,197,184,169,175,188,194,180];      // 12 месяцев, последний — текущий
+  const extra={2:[["tires",460,"Зимняя резина + шиномонтаж"]],5:[["tax",186,"Транспортный налог"]],7:[["repair",240,"Замена тормозных колодок"]],9:[["toll",38,"Платная трасса"],["parts",64,"Щётки стеклоочистителя"]],10:[["toll",24,"Платная трасса"]]};
+  const months=[]; for(let i=11;i>=0;i--) months.push(addMonths(cur,-i));
+  let odo=64300-36*400;
+  months.forEach((k,idx)=>{
+    const isCur=k===cur; const day=d=>`${k}-${pad(isCur?Math.min(d,today):d)}`;
+    const fuel=fuelBy[idx]; const parts=[.38,.34,.28]; let acc=0;
+    parts.forEach((p,j)=>{ const amt=j===2?round2(fuel-acc):round2(fuel*p); acc+=amt; const price=round2(1.78+((idx+j)%4)*0.02); odo+=400;
+      ex.push({id:uid(),carId:car.id,category:"fuel",amount:amt,date:day(4+j*9),liters:round2(amt/price),odometer:odo,note:["АЗС Shell","АЗС Aral","АЗС Total"][j]}); });
+    ex.push({id:uid(),carId:car.id,category:"insurance",amount:75,date:day(1),note:"КАСКО, ежемесячный платёж"});
+    ex.push({id:uid(),carId:car.id,category:"parking",amount:55,date:day(2),note:"Парковка у офиса"});
+    ex.push({id:uid(),carId:car.id,category:"service",amount:80,date:day(12),note:"Сервисный контракт"});
+    ex.push({id:uid(),carId:car.id,category:"wash",amount:20,date:day(16),note:"Мойка"});
+    (extra[idx]||[]).forEach(([c,a,n],j)=>ex.push({id:uid(),carId:car.id,category:c,amount:a,date:day(19+j*3),note:n}));
+  });
+  return {car,expenses:ex};
+}
+function loadDemo(){ const {car,expenses}=demoData(); Data.mutate(d=>{ d.cars.push(car); d.expenses.push(...expenses); d.activeCar=car.id; }); return car; }
+
+/* ---------------- services/ai — AI abstraction layer ---------------- */
+const AI_SYSTEM=`Ты — ассистент сервиса CarCost AI по расходам на автомобиль. Отвечай только на русском языке.
+Используй ТОЛЬКО данные из блока DATA. Не придумывай цифры, даты и категории. Если данных недостаточно для ответа, прямо скажи, каких данных не хватает.
+Суммы указывай в евро. Отвечай кратко и по делу: 3–8 предложений или короткий список. Для what-if расчётов покажи формулу и допущения.`;
+function aiContext(){
+  const d=Data.get(); const car=d.cars.find(c=>c.id===d.activeCar)||d.cars[0]||null; const list=car?d.expenses.filter(e=>e.carId===car.id):[];
+  const cur=mkey(new Date()); const months=[]; for(let i=11;i>=0;i--){ const k=addMonths(cur,-i); const L=Calc.inMonth(list,k); if(!L.length) continue;
+    const cats={}; L.forEach(e=>cats[CATS[e.category].n]=round2((cats[CATS[e.category].n]||0)+e.amount)); months.push({month:k,total:Calc.sum(L),byCategory:cats}); }
+  return {today:todayISO(),currentMonth:cur,currentMonthIsPartial:true,car:car&&{name:`${car.brand} ${car.model} ${car.year}`,fuel:car.fuel,gearbox:car.gearbox,odometerKm:car.mileage,consumptionL100:car.consumption,monthlyKm:car.monthlyKm,fuelPriceEurPerL:car.fuelPrice},
+    months,avgMonthly:Calc.avgMonthly(list),forecast:Calc.forecast(list),fuel:Calc.fuel(list,car)};
+}
+const Providers={
+  async openai({key,model},system,user){
+    const r=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+key},
+      body:JSON.stringify({model:model||"gpt-4o-mini",temperature:.2,messages:[{role:"system",content:system},{role:"user",content:user}]})});
+    const j=await r.json().catch(()=>({})); if(!r.ok) throw new Error(j.error?.message||("HTTP "+r.status)); return j.choices?.[0]?.message?.content?.trim()||"";
+  },
+  async anthropic({key,model},system,user){
+    const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:model||"claude-haiku-4-5-20251001",max_tokens:900,system,messages:[{role:"user",content:user}]})});
+    const j=await r.json().catch(()=>({})); if(!r.ok) throw new Error(j.error?.message||("HTTP "+r.status)); return (j.content||[]).map(c=>c.text||"").join("").trim();
+  }
+};
+const AIService={
+  async ask(question){
+    const d=Data.get(); const cfg=d.ai||{provider:"mock"}; const ctx=aiContext();
+    if(cfg.provider!=="mock"&&cfg.key){
+      try{ const text=await Providers[cfg.provider](cfg,AI_SYSTEM,`DATA:\n${JSON.stringify(ctx)}\n\nВОПРОС: ${question}`); if(text) return {text,source:cfg.provider==="openai"?"OpenAI":"Anthropic"}; }
+      catch(e){ return {text:MockAI.answer(question,ctx),source:"mock",warn:`Не удалось обратиться к ${cfg.provider==="openai"?"OpenAI":"Anthropic"}: ${e.message}. Показан демо-ответ.`}; }
+    }
+    return {text:MockAI.answer(question,ctx),source:"mock"};
+  }
+};
+/* Mock-ответы: без нейросети, но строго по данным пользователя (никаких выдуманных цифр) */
+const MockAI={
+  answer(q,ctx){
+    const s=q.toLowerCase(); const M=ctx.months;
+    if(!ctx.car) return "Недостаточно данных: у вас нет автомобиля. Добавьте автомобиль и расходы, и я смогу их проанализировать.";
+    if(!M.length) return `Недостаточно данных: для ${ctx.car.name} нет ни одного расхода. Добавьте расходы хотя бы за 2 месяца.`;
+    const pctIn=(def)=>{ const m=s.match(/(\d{1,3})\s*%/); return m?+m[1]/100:def; };
+    const full=M.filter(m=>m.month!==ctx.currentMonth);
+    if(/вырос|рост|увелич|почему.*(больше|дороже)|подорож.*расход/.test(s)&&!/топлив|бензин/.test(s)){
+      if(full.length<1||M.length<2) return "Недостаточно данных: нужно минимум два месяца с расходами, чтобы сравнить.";
+      const last=M[M.length-1], prev=M[M.length-2];
+      const cats=new Set([...Object.keys(last.byCategory),...Object.keys(prev.byCategory)]);
+      const diffs=[...cats].map(c=>({c,d:round2((last.byCategory[c]||0)-(prev.byCategory[c]||0))})).filter(x=>x.d!==0).sort((a,b)=>b.d-a.d);
+      const delta=round2(last.total-prev.total);
+      let t=`${mLabelCap(last.month)}: ${eur2(last.total)}, ${mLabel(prev.month)}: ${eur2(prev.total)}. `;
+      t+= delta>0?`Расходы выросли на ${eur2(delta)} (${numf(delta/prev.total*100,1)}%).`:`Расходы не выросли: они ниже на ${eur2(-delta)}.`;
+      if(last.month===ctx.currentMonth) t+=` Учтите, что ${mLabel(last.month)} ещё не закончился.`;
+      const ups=diffs.filter(x=>x.d>0).slice(0,3), downs=diffs.filter(x=>x.d<0).slice(0,2);
+      if(ups.length) t+=`\n\nБольше всего выросли:\n`+ups.map(x=>`• ${x.c}: +${eur2(x.d)}`).join("\n");
+      if(downs.length) t+=`\n\nСнизились:\n`+downs.map(x=>`• ${x.c}: ${eur2(x.d)}`).join("\n");
+      return t;
+    }
+    if(/больше всего|трачу|основн|структур|на что/.test(s)){
+      const tot={}; let all=0; M.forEach(m=>Object.entries(m.byCategory).forEach(([c,v])=>{ tot[c]=(tot[c]||0)+v; all+=v; }));
+      const top=Object.entries(tot).sort((a,b)=>b[1]-a[1]);
+      return `За ${M.length} ${plural(M.length,"месяц","месяца","месяцев")} (${mLabel(M[0].month)} – ${mLabel(M[M.length-1].month)}) вы потратили ${eur2(all)}.\n\nБольше всего уходит на:\n`+
+        top.slice(0,4).map(([c,v],i)=>`${i+1}. ${c}: ${eur2(v)} (${numf(v/all*100,0)}%)`).join("\n")+
+        `\n\nВ среднем это ${eur2(ctx.avgMonthly)} в месяц.`;
+    }
+    if(/сниз|эконом|сократ|меньше трат|сэконом/.test(s)){
+      const tot={}; M.forEach(m=>Object.entries(m.byCategory).forEach(([c,v])=>tot[c]=(tot[c]||0)+v)); const n=M.length; const perM=c=>(tot[c]||0)/n;
+      const tips=[];
+      if(tot["Топливо"]){ const y=perM("Топливо")*12; tips.push(`Топливо: ${eur2(perM("Топливо"))} в месяц. Снижение расхода на 5% (плавный разгон, давление в шинах) даст около ${eur2(y*0.05)} в год.`); }
+      if(tot["Парковка"]){ tips.push(`Парковка: ${eur2(perM("Парковка"))} в месяц, ${eur2(perM("Парковка")*12)} в год. Проверьте абонемент или парковку дальше от центра.`); }
+      if(tot["Страховка"]){ tips.push(`Страховка: ${eur2(perM("Страховка")*12)} в год. Сравните предложения 2–3 страховщиков перед продлением.`); }
+      if(tot["Обслуживание"]){ tips.push(`Обслуживание: ${eur2(perM("Обслуживание"))} в месяц. Сравните сервисный контракт с оплатой ТО по факту по регламенту.`); }
+      if(tot["Мойка"]){ tips.push(`Мойка: ${eur2(perM("Мойка")*12)} в год. Абонемент на мойку обычно дешевле разовых визитов.`); }
+      if(!tips.length) return "Недостаточно данных, чтобы дать рекомендации: добавьте расходы по категориям.";
+      return `Рекомендации по вашим данным за ${n} ${plural(n,"месяц","месяца","месяцев")}:\n\n`+tips.map(t=>"• "+t).join("\n")+`\n\nОценки экономии приблизительные: они считаются от ваших средних расходов.`;
+    }
+    if(/топлив|бензин|дизел/.test(s)&&/подорож|дорож|цен|вырас/.test(s)){
+      const f=ctx.fuel; const avgFuel=M.reduce((a,m)=>a+(m.byCategory["Топливо"]||0),0)/M.length; if(!avgFuel) return "Недостаточно данных: нет расходов на топливо.";
+      const p=pctIn(0.10); const y=avgFuel*12; const price=f.price||ctx.car.fuelPriceEurPerL;
+      return `Сейчас топливо стоит вам в среднем ${eur2(avgFuel)} в месяц (${eur2(y)} в год)${price?`, средняя цена ${numf(price,2)} €/л`:""}.\n\nЕсли топливо подорожает на ${numf(p*100,0)}%${price?` (до ${numf(price*(1+p),2)} €/л)`:""}:\n• +${eur2(avgFuel*p)} в месяц\n• +${eur2(y*p)} в год\n\nДопущение: пробег и расход топлива не изменятся.`;
+    }
+    if(/больше езд|ездить больше|пробег.*(больше|увелич)|больше км|километр/.test(s)){
+      const km=ctx.car.monthlyKm; const kmM=s.match(/(\d{3,5})\s*км/); const p=kmM?(+kmM[1]-km)/km:pctIn(0.20); if(!isFinite(p)) return "Не понял, на сколько больше вы планируете ездить. Напишите, например, «на 20%» или «2000 км в месяц».";
+      const avgFuel=M.reduce((a,m)=>a+(m.byCategory["Топливо"]||0),0)/M.length; const avgServ=M.reduce((a,m)=>a+(m.byCategory["Обслуживание"]||0)+(m.byCategory["Шины"]||0)+(m.byCategory["Ремонт"]||0),0)/M.length;
+      const dF=avgFuel*p, dS=avgServ*p*0.5;
+      return `Сейчас ваш пробег около ${numf(km)} км в месяц. Если ездить на ${numf(p*100,0)}% больше (≈${numf(km*(1+p))} км):\n• Топливо: +${eur2(dF)} в месяц\n• Износ, ТО, шины, ремонт: примерно +${eur2(dS)} в месяц\n• Итого: около +${eur2(dF+dS)} в месяц, +${eur2((dF+dS)*12)} в год\n\nДопущения: топливо растёт пропорционально пробегу. Износ оценён как половина роста пробега. Страховка и парковка не меняются.`;
+    }
+    if(/за год|в год|годов|сколько.*стоит|прогноз/.test(s)){
+      const fc=ctx.forecast; if(!fc) return "Недостаточно данных для прогноза: нужны расходы хотя бы за 3 полных месяца.";
+      return `По данным за последние ${fc.basis} ${plural(fc.basis,"месяц","месяца","месяцев")} автомобиль обходится в среднем в ${eur2(fc.monthly)} в месяц.\n\nПрогноз на год: около ${eur(fc.year)} (вероятный диапазон ${eur(fc.low)} – ${eur(fc.high)}).\n\nПрогноз не учитывает разовые траты, которых ещё не было в истории: например, крупный ремонт.`;
+    }
+    const last=M[M.length-1];
+    return `Могу ответить только по вашим данным. Кратко о ${ctx.car.name}: ${mLabel(last.month)}: ${eur2(last.total)}, в среднем ${eur2(ctx.avgMonthly)} в месяц.\n\nСпросите, например:\n• Почему мои расходы выросли?\n• На что я трачу больше всего?\n• Как снизить расходы?\n• Сколько автомобиль будет стоить мне за год?\n• Что будет, если топливо подорожает на 15%?\n• Что будет, если я начну ездить 2000 км в месяц?`;
+  }
+};
+
+/* ---------------- ui/components ---------------- */
+function toast(msg,type="ok"){ const el=document.createElement("div"); el.className="toast "+type; el.innerHTML=ic(type==="err"?"alert":type==="info"?"info":"check")+`<div>${esc(msg)}</div>`; $("#toasts").appendChild(el); setTimeout(()=>{ el.style.opacity="0"; el.style.transition="opacity .3s"; setTimeout(()=>el.remove(),300); },3200); }
+function modal(html,{onClose}={}){
+  const ov=document.createElement("div"); ov.className="ov"; ov.innerHTML=`<div class="modal" role="dialog" aria-modal="true">${html}</div>`; $("#modals").appendChild(ov);
+  const close=()=>{ ov.remove(); document.removeEventListener("keydown",k); onClose&&onClose(); };
+  const k=e=>{ if(e.key==="Escape") close(); }; document.addEventListener("keydown",k);
+  ov.addEventListener("mousedown",e=>{ if(e.target===ov) close(); }); $$("[data-close]",ov).forEach(b=>b.addEventListener("click",close));
+  const first=$("input,select,textarea",ov); if(first) setTimeout(()=>first.focus(),40);
+  return {el:ov,close};
+}
+function confirmBox(title,text,ok="Удалить"){ return new Promise(res=>{ let done=false; const m=modal(`<h3>${esc(title)}</h3><p>${esc(text)}</p><div class="acts"><button class="btn" data-close>Отмена</button><button class="btn primary" id="cOk">${esc(ok)}</button></div>`,{onClose:()=>{ if(!done) res(false); }}); $("#cOk",m.el).onclick=()=>{ done=true; res(true); m.close(); }; }); }
+function showErrors(form,errs){ $$(".ferr",form).forEach(e=>e.textContent=""); $$(".inp",form).forEach(i=>i.classList.remove("err")); let first=null;
+  for(const [k,v] of Object.entries(errs)){ const inp=form.querySelector(`[name="${k}"]`); const fe=form.querySelector(`[data-err="${k}"]`); if(fe) fe.textContent=v; if(inp){ inp.classList.add("err"); first=first||inp; } else if(fe===null&&k==="_") toast(v,"err"); }
+  first&&first.focus(); }
+const formData=form=>Object.fromEntries(new FormData(form).entries());
+function paywall(reason){
+  const m=modal(`<h3><span style="display:flex;gap:10px;align-items:center">${ic("crown")}Перейти на AI Pro</span><button class="btn icon ghost" data-close aria-label="Закрыть">${ic("x")}</button></h3>
+    <p>${esc(reason)}</p>
+    <div class="card" style="box-shadow:none;background:var(--surface2);display:grid;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><b>AI Pro</b><span class="num" style="font-size:24px;font-weight:800">9,99 €<small style="font-size:13px;color:var(--muted);font-weight:500"> / мес</small></span></div>
+      <ul style="margin:0;padding-left:18px;color:var(--muted);font-size:14px;display:grid;gap:4px"><li>Неограниченные запросы к ИИ</li><li>Прогноз расходов и what-if</li><li>Несколько автомобилей</li><li>Вся история расходов</li></ul></div>
+    <div class="banner info">${ic("info")}<div>Оплата через Stripe пока не подключена. Кнопка включает тестовую подписку, деньги не списываются.</div></div>
+    <div class="acts"><button class="btn" data-close>Не сейчас</button><button class="btn primary" id="pwGo">${ic("crown")}Перейти на AI Pro</button></div>`);
+  $("#pwGo",m.el).onclick=async()=>{ await Billing.subscribe(); m.close(); toast("AI Pro включён (тестовая подписка)"); render(); };
+}
+
+/* charts (SVG, single-series, hover tooltips) */
+function niceMax(v){ if(v<=0) return 10; const p=Math.pow(10,Math.floor(Math.log10(v))); const n=v/p; const m=n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10; return m*p; }
+const tip=$("#tip");
+function showTip(e,html){ tip.innerHTML=html; tip.hidden=false; tip.style.left=e.clientX+"px"; tip.style.top=e.clientY+"px"; }
+function hideTip(){ tip.hidden=true; }
+function barChart(el,data,{h=240,fmt=v=>eur(v),hl=null,forecastFrom=null}={}){
+  const W=Math.max(280,el.clientWidth||600), H=h, L=48, R=8, T=12, B=26; const iw=W-L-R, ih=H-T-B;
+  const max=niceMax(Math.max(...data.map(d=>d.value),1)); const n=data.length; const step=iw/n; const bw=Math.min(40,step*.62);
+  const ticks=[0,.25,.5,.75,1].map(t=>t*max);
+  let s=`<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Столбчатая диаграмма">`;
+  ticks.forEach(t=>{ const y=T+ih-t/max*ih; s+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="var(--grid)" stroke-width="1"/><text x="${L-8}" y="${y+4}" text-anchor="end">${t>=1000?numf(t/1000,t%1000?1:0)+"k":numf(t)}</text>`; });
+  data.forEach((d,i)=>{ const x=L+i*step+(step-bw)/2; const bh=Math.max(d.value>0?2:0,d.value/max*ih); const y=T+ih-bh; const r=Math.min(4,bw/2,bh);
+    const isF=d.forecast; const isHl=hl===i;
+    const fill=isF?"none":isHl?"var(--accent)":"color-mix(in srgb,var(--accent) 55%,var(--surface))";
+    s+=bh>0?`<path d="M${x},${T+ih} V${y+r} Q${x},${y} ${x+r},${y} H${x+bw-r} Q${x+bw},${y} ${x+bw},${y+r} V${T+ih} Z" fill="${fill}" ${isF?'stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="4 3"':""}/>`:"";
+    s+=`<text x="${x+bw/2}" y="${H-8}" text-anchor="middle" ${isHl?'style="fill:var(--ink);font-weight:700"':""}>${esc(d.label)}</text>`;
+    s+=`<rect x="${L+i*step}" y="${T}" width="${step}" height="${ih+B}" fill="transparent" data-i="${i}" style="cursor:default"/>`; });
+  s+=`<line x1="${L}" x2="${W-R}" y1="${T+ih}" y2="${T+ih}" stroke="var(--line)"/></svg>`;
+  el.innerHTML=s; el.classList.add("chart");
+  $$("rect[data-i]",el).forEach(r=>{ r.addEventListener("mousemove",e=>{ const d=data[+r.dataset.i]; showTip(e,`${esc(d.tip||d.label)}<br><b class="num">${fmt(d.value)}</b>${d.forecast?"<br>прогноз":""}`); }); r.addEventListener("mouseleave",hideTip); });
+}
+function lineChart(el,data,{h=220,fmt=v=>eur2(v)}={}){
+  const W=Math.max(280,el.clientWidth||600), H=h, L=48, R=12, T=14, B=26; const iw=W-L-R, ih=H-T-B;
+  const vals=data.map(d=>d.value); const max=niceMax(Math.max(...vals,0.01)); const n=data.length; const x=i=>L+(n===1?iw/2:i*iw/(n-1)); const y=v=>T+ih-v/max*ih;
+  let s=`<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Линейный график">`;
+  [0,.25,.5,.75,1].forEach(t=>{ const yy=y(t*max); s+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="var(--grid)"/><text x="${L-8}" y="${yy+4}" text-anchor="end">${numf(t*max,2)}</text>`; });
+  const pts=data.map((d,i)=>`${x(i)},${y(d.value)}`).join(" ");
+  s+=`<polygon points="${x(0)},${T+ih} ${pts} ${x(n-1)},${T+ih}" fill="var(--accent)" opacity=".08"/>`;
+  s+=`<polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  data.forEach((d,i)=>{ s+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle">${esc(d.label)}</text>`; });
+  const li=n-1; s+=`<circle cx="${x(li)}" cy="${y(data[li].value)}" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>`;
+  s+=`<line id="xh" x1="0" x2="0" y1="${T}" y2="${T+ih}" stroke="var(--dim)" stroke-dasharray="3 3" visibility="hidden"/><circle id="xd" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>`;
+  s+=`<rect x="${L}" y="${T}" width="${iw}" height="${ih}" fill="transparent" id="hit"/></svg>`;
+  el.innerHTML=s; el.classList.add("chart");
+  const svg=$("svg",el), hit=$("#hit",el), xh=$("#xh",el), xd=$("#xd",el);
+  hit.addEventListener("mousemove",e=>{ const r=svg.getBoundingClientRect(); const px=(e.clientX-r.left)*W/r.width; const i=clamp(Math.round((px-L)/(iw/Math.max(1,n-1))),0,n-1); const d=data[i];
+    xh.setAttribute("x1",x(i)); xh.setAttribute("x2",x(i)); xh.setAttribute("visibility","visible"); xd.setAttribute("cx",x(i)); xd.setAttribute("cy",y(d.value)); xd.setAttribute("visibility","visible");
+    showTip(e,`${esc(d.tip||d.label)}<br><b class="num">${fmt(d.value)}</b>${d.sub?"<br>"+esc(d.sub):""}`); });
+  hit.addEventListener("mouseleave",()=>{ hideTip(); xh.setAttribute("visibility","hidden"); xd.setAttribute("visibility","hidden"); });
+}
+function hbars(rows,{fmt=v=>eur(v),showShare=true}={}){
+  if(!rows.length) return `<div class="note">Нет данных за этот период.</div>`; const max=Math.max(...rows.map(r=>r.total));
+  return `<div class="hbars">${rows.map(r=>`<div class="hb"><div class="n">${ic(CATS[r.cat].i)}<span>${CATS[r.cat].n}</span></div><div class="t"><i style="width:${Math.max(2,r.total/max*100)}%"></i></div><div class="v">${fmt(r.total)}${showShare?`<small>${numf(r.share*100,0)}%</small>`:""}</div></div>`).join("")}</div>`;
+}
+function monthTable(rows){ return `<div class="scrollx"><table class="dtable"><thead><tr><th>Месяц</th><th class="r">Расходы</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${mLabelCap(r.key)}</td><td class="r">${eur2(r.total)}</td></tr>`).join("")}</tbody></table></div>`; }
+
+/* ---------------- forms ---------------- */
+function carForm(car){
+  const d=Data.get(); if(!car&&!Plan.canAddCar(d)){ paywall("На бесплатном тарифе можно добавить 1 автомобиль. В AI Pro — сколько угодно."); return; }
+  const c=car||{brand:"",model:"",year:"",fuel:"Бензин",gearbox:"Автомат",mileage:"",consumption:"",monthlyKm:"",fuelPrice:"1.80"};
+  const f=(n,l,t="text",extra="")=>`<label class="field"><span>${l}</span><input class="inp" name="${n}" type="${t}" value="${esc(c[n])}" ${extra}><div class="ferr" data-err="${n}"></div></label>`;
+  const sel=(n,l,opts)=>`<label class="field"><span>${l}</span><select class="inp" name="${n}">${opts.map(o=>`<option ${o===c[n]?"selected":""}>${o}</option>`).join("")}</select><div class="ferr" data-err="${n}"></div></label>`;
+  const m=modal(`<h3>${car?"Редактировать автомобиль":"Новый автомобиль"}<button class="btn icon ghost" data-close aria-label="Закрыть">${ic("x")}</button></h3>
+    <form id="carF" novalidate style="display:grid;gap:12px">
+      <div class="grid2">${f("brand","Марка","text",'placeholder="BMW" autocomplete="off"')}${f("model","Модель","text",'placeholder="320i" autocomplete="off"')}</div>
+      <div class="grid2">${f("year","Год","number",'inputmode="numeric" placeholder="2021"')}${f("mileage","Текущий пробег, км","number",'inputmode="numeric" placeholder="64300"')}</div>
+      <div class="grid2">${sel("fuel","Тип топлива",FUELS)}${sel("gearbox","Коробка передач",GEARS)}</div>
+      <div class="grid3">${f("consumption","Расход, л/100 км","number",'step="0.1" inputmode="decimal" placeholder="7.4"')}${f("monthlyKm","Пробег в месяц, км","number",'inputmode="numeric" placeholder="1200"')}${f("fuelPrice","Цена топлива, €/л","number",'step="0.01" inputmode="decimal"')}</div>
+      <div class="note">Для электромобиля укажите расход в кВт·ч/100 км и цену за кВт·ч.</div>
+      <div class="acts"><button type="button" class="btn" data-close>Отмена</button><button class="btn primary" type="submit">${car?"Сохранить":"Добавить автомобиль"}</button></div>
+    </form>`);
+  $("#carF",m.el).addEventListener("submit",e=>{ e.preventDefault(); const r=Schemas.car.safeParse(formData(e.target)); if(!r.success){ showErrors(e.target,fieldErrors(r.error)); return; }
+    Data.mutate(d=>{ if(car){ const i=d.cars.findIndex(x=>x.id===car.id); d.cars[i]={...d.cars[i],...r.data}; } else { const nc={id:uid(),createdAt:Date.now(),...r.data}; d.cars.push(nc); d.activeCar=nc.id; } });
+    m.close(); toast(car?"Автомобиль сохранён":"Автомобиль добавлен"); render(); });
+}
+function expenseForm(ex,preset={}){
+  const d=Data.get(); if(!d.cars.length){ toast("Сначала добавьте автомобиль","err"); carForm(); return; }
+  const e0=ex||{carId:d.activeCar||d.cars[0].id,category:preset.category||"fuel",amount:"",date:todayISO(),odometer:"",liters:"",note:""};
+  const m=modal(`<h3>${ex?"Редактировать расход":"Новый расход"}<button class="btn icon ghost" data-close aria-label="Закрыть">${ic("x")}</button></h3>
+    <form id="exF" novalidate style="display:grid;gap:12px">
+      <div class="grid2"><label class="field"><span>Категория</span><select class="inp" name="category">${CAT_KEYS.map(k=>`<option value="${k}" ${k===e0.category?"selected":""}>${CATS[k].n}</option>`).join("")}</select><div class="ferr" data-err="category"></div></label>
+        <label class="field"><span>Сумма, €</span><input class="inp num" name="amount" type="number" step="0.01" inputmode="decimal" value="${esc(e0.amount)}" placeholder="0,00"><div class="ferr" data-err="amount"></div></label></div>
+      <div class="grid2"><label class="field"><span>Дата</span><input class="inp" name="date" type="date" max="${todayISO()}" value="${esc(e0.date)}"><div class="ferr" data-err="date"></div></label>
+        <label class="field"><span>Автомобиль</span><select class="inp" name="carId">${d.cars.map(c=>`<option value="${c.id}" ${c.id===e0.carId?"selected":""}>${esc(c.brand+" "+c.model)}</option>`).join("")}</select><div class="ferr" data-err="carId"></div></label></div>
+      <div class="grid2" id="fuelRow"><label class="field"><span>Литры (необязательно)</span><input class="inp num" name="liters" type="number" step="0.01" inputmode="decimal" value="${esc(e0.liters??"")}"><div class="ferr" data-err="liters"></div></label>
+        <label class="field"><span>Пробег по одометру (необязательно)</span><input class="inp num" name="odometer" type="number" inputmode="numeric" value="${esc(e0.odometer??"")}"><div class="ferr" data-err="odometer"></div></label></div>
+      <label class="field"><span>Комментарий</span><input class="inp" name="note" maxlength="140" value="${esc(e0.note||"")}" placeholder="Например: АЗС, сервис, штраф"><div class="ferr" data-err="note"></div></label>
+      <div class="acts"><button type="button" class="btn" data-close>Отмена</button><button class="btn primary" type="submit">${ex?"Сохранить":"Добавить расход"}</button></div>
+    </form>`);
+  const F=$("#exF",m.el); const sync=()=>{ $("#fuelRow",F).querySelector("label").style.display=F.category.value==="fuel"?"":"none"; }; F.category.addEventListener("change",sync); sync();
+  F.addEventListener("submit",ev=>{ ev.preventDefault(); const r=Schemas.expense.safeParse(formData(F)); if(!r.success){ showErrors(F,fieldErrors(r.error)); return; }
+    const v=r.data; const rec={carId:v.carId,category:v.category,amount:round2(v.amount),date:v.date,odometer:v.odometer===""||v.odometer==null?null:v.odometer,liters:v.category==="fuel"&&v.liters!==""&&v.liters!=null?v.liters:null,note:v.note||""};
+    Data.mutate(d=>{ if(ex){ const i=d.expenses.findIndex(x=>x.id===ex.id); d.expenses[i]={...d.expenses[i],...rec}; } else d.expenses.push({id:uid(),...rec});
+      if(rec.odometer){ const c=d.cars.find(c=>c.id===rec.carId); if(c&&rec.odometer>c.mileage) c.mileage=rec.odometer; } });
+    m.close(); toast(ex?"Расход сохранён":"Расход добавлен"); render(); });
+}
+async function deleteExpense(id){ if(await confirmBox("Удалить расход?","Расход исчезнет из статистики и графиков.")){ Data.mutate(d=>{ d.expenses=d.expenses.filter(e=>e.id!==id); }); toast("Расход удалён"); render(); } }
+
+/* ---------------- theme ---------------- */
+function applyTheme(t){ document.body.classList.remove("t-light","t-dark"); if(t==="light") document.body.classList.add("t-light"); if(t==="dark") document.body.classList.add("t-dark"); }
+function isDark(){ const t=ME?Data.get().theme:store.get("cc:theme","system"); if(t==="dark") return true; if(t==="light") return false;
+  const rt=document.documentElement.getAttribute("data-theme"); if(rt) return rt==="dark"; return matchMedia("(prefers-color-scheme: dark)").matches; }
+function toggleTheme(){ const next=isDark()?"light":"dark"; if(ME) Data.mutate(d=>d.theme=next); else store.set("cc:theme",next); applyTheme(next); render(); }
+
+/* ---------------- routing & shell ---------------- */
+let ME=null; let route="landing"; const UI={dashCar:"active",catPeriod:"month",chartView:"chart",fx:{q:"",cat:"all",car:"all",period:"6m",from:"",to:"",sort:"date"},anMonths:6,cmpA:null,cmpB:null,calc:null,sim:null,busy:false};
+const PUBLIC=["landing","login","register"]; const APP=["dashboard","cars","expenses","analytics","calculator","ai","pricing","settings"];
+const NAV=[["dashboard","Главная","home"],["cars","Мои автомобили","car"],["expenses","Расходы","list"],["analytics","Аналитика","chart"],["calculator","Калькулятор","calc"],["ai","ИИ-ассистент","spark"],["pricing","Тарифы","crown"],["settings","Настройки","gear"]];
+function go(r){ if(location.hash!=="#"+r) location.hash=r; else render(); }
+window.addEventListener("hashchange",()=>render());
+let rsz; window.addEventListener("resize",()=>{ clearTimeout(rsz); rsz=setTimeout(()=>{ if(["dashboard","analytics"].includes(route)) render(); },150); });
+
+function render(){
+  hideTip(); ME=Auth.current(); let r=(location.hash||"#").slice(1)||(ME?"dashboard":"landing");
+  if(!PUBLIC.includes(r)&&!APP.includes(r)) r=ME?"dashboard":"landing";
+  if(APP.includes(r)&&!ME){ r="login"; history.replaceState(null,"","#login"); }
+  if((r==="login"||r==="register")&&ME){ r="dashboard"; history.replaceState(null,"","#dashboard"); }
+  route=r; applyTheme(ME?Data.get().theme:store.get("cc:theme","system"));
+  const app=$("#app");
+  if(PUBLIC.includes(r)){ app.innerHTML=Pages[r](); }
+  else { app.innerHTML=shell(Pages[r]()); }
+  const after=After[r]; after&&after(); window.scrollTo({top:0});
+}
+function shell(content){
+  const d=Data.get(); const p=Plan.get(d); const left=Plan.aiLeft(d); const used=Plan.aiUsed(d);
+  const nav=NAV.map(([k,n,i])=>`<a href="#${k}" class="${route===k?"on":""}">${ic(i)}${n}</a>`).join("");
+  const initials=ME.name.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();
+  return `<div class="shell">
+    <aside class="sidebar"><button class="brand" onclick="location.hash='dashboard'"><span class="lg">${ic("car")}</span>CarCost <small>AI</small></button>
+      <nav class="nav">${nav.split("</a>").slice(0,6).join("</a>")}</a><div class="navlabel">Аккаунт</div>${NAV.slice(6).map(([k,n,i])=>`<a href="#${k}" class="${route===k?"on":""}">${ic(i)}${n}</a>`).join("")}</nav>
+      <div class="planbox"><div class="top"><b style="font-size:14px">${p.name}</b><span class="chip ${p.id==="pro"?"accent":""}">${p.id==="pro"?"Pro":"Free"}</span></div>
+        ${p.id==="pro"?`<div class="note">Безлимитные запросы к ИИ и прогнозы.</div>`:`<div class="note">ИИ-запросы: осталось <b class="num" style="color:var(--ink)">${left}</b> из ${p.aiPerMonth}</div><div class="meter"><i style="width:${used/p.aiPerMonth*100}%"></i></div><button class="btn primary sm" onclick="location.hash='pricing'">${ic("crown")}Перейти на AI Pro</button>`}</div>
+      <div class="userrow"><div class="ava">${esc(initials)}</div><div class="nm"><b>${esc(ME.name)}</b><span>${esc(ME.email)}</span></div><button class="btn icon ghost" data-act="theme" title="Сменить тему" aria-label="Сменить тему">${ic(isDark()?"sun":"moon")}</button></div>
+    </aside>
+    <main class="main">
+      <div class="mtop"><button class="brand" onclick="location.hash='dashboard'"><span class="lg">${ic("car")}</span>CarCost <small>AI</small></button>
+        <div style="display:flex;gap:6px;align-items:center"><span class="chip ${p.id==="pro"?"accent":""}">${p.id==="pro"?"AI Pro":"ИИ: "+left+"/"+p.aiPerMonth}</span><button class="btn icon ghost" data-act="theme" aria-label="Сменить тему">${ic(isDark()?"sun":"moon")}</button></div></div>
+      ${content}
+    </main>
+    <nav class="bnav">
+      <a href="#dashboard" class="${route==="dashboard"?"on":""}">${ic("home")}Главная</a>
+      <a href="#expenses" class="${route==="expenses"?"on":""}">${ic("list")}Расходы</a>
+      <button class="plus" data-act="addExpense" aria-label="Добавить расход">${ic("plus")}</button>
+      <a href="#ai" class="${route==="ai"?"on":""}">${ic("spark")}ИИ</a>
+      <button data-act="more" class="${["cars","analytics","calculator","pricing","settings"].includes(route)?"on":""}">${ic("more")}Ещё</button>
+    </nav></div>`;
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return; const a=b.dataset.act;
+  if(a==="theme") toggleTheme();
+  if(a==="addExpense") expenseForm();
+  if(a==="addCar") carForm();
+  if(a==="upgrade") paywall(b.dataset.reason||"Откройте все возможности CarCost AI.");
+  if(a==="loadDemo"){ const d=Data.get(); if(d.cars.length&&!Plan.canAddCar(d)){ paywall("Демо-автомобиль добавится вторым, а на бесплатном тарифе доступен 1 автомобиль."); return; } loadDemo(); toast("Добавлены демо-данные: BMW 320i и расходы за 12 месяцев"); render(); }
+  if(a==="more"){ const m=modal(`<h3>Разделы<button class="btn icon ghost" data-close aria-label="Закрыть">${ic("x")}</button></h3><nav class="nav">${NAV.map(([k,n,i])=>`<a href="#${k}" class="${route===k?"on":""}" data-close>${ic(i)}${n}</a>`).join("")}<a href="#" data-act="logout" data-close>${ic("logout")}Выйти</a></nav>`); }
+  if(a==="logout"){ e.preventDefault(); Auth.logout(); toast("Вы вышли из аккаунта","info"); location.hash="landing"; }
+});
+
+/* ---------------- ui/pages ---------------- */
+const pubNav=()=>`<header class="pnav"><button class="brand" onclick="location.hash='landing'"><span class="lg">${ic("car")}</span>CarCost <small>AI</small></button><div class="sp"></div>
+  <button class="btn icon ghost" data-act="theme" aria-label="Сменить тему">${ic(isDark()?"sun":"moon")}</button>
+  ${ME?`<a class="btn primary" href="#dashboard">Открыть кабинет</a>`:`<a class="btn ghost" href="#login">Войти</a><a class="btn primary" href="#register">Регистрация</a>`}</header>`;
+const Pages={
+landing(){ return `<div class="pub"><div class="wrap">${pubNav()}
+  <section class="hero"><div>
+    <span class="chip accent">${ic("spark")}ИИ-анализ расходов на авто</span>
+    <h1>Сколько на самом деле стоит <span>ваш автомобиль</span></h1>
+    <p>Записывайте траты на топливо, страховку, парковку и сервис. CarCost AI посчитает стоимость километра, сделает прогноз на год и подскажет, где сэкономить.</p>
+    <div class="ctas"><a class="btn primary lg" href="#register">Начать бесплатно</a><button class="btn lg" id="demoBtn">${ic("user")}Войти в демо-аккаунт</button></div>
+    <div class="fine">Бесплатно: 1 автомобиль, учёт расходов, калькулятор и 5 вопросов ИИ в месяц.</div></div>
+    <div class="mock" aria-hidden="true">
+      <div style="display:flex;justify-content:space-between;align-items:center"><b>BMW 320i · 2021</b><span class="chip good">${ic("down")}−4,2% к прошлому месяцу</span></div>
+      <div class="row"><div class="k"><span>В этом месяце</span><b class="num">410 €</b></div><div class="k"><span>Стоимость 1 км</span><b class="num">0,34 €</b></div><div class="k"><span>Прогноз на год</span><b class="num">5 180 €</b></div></div>
+      <div class="bars">${[62,58,90,64,74,68,72,66,62,66,68,60].map(h=>`<i style="height:${h}%"></i>`).join("")}</div>
+      <div class="ai">${ic("spark")}<div><b>Где сэкономить?</b> Топливо: 44% расходов. Снижение расхода на 5% даст около 108 € в год.</div></div>
+    </div></section>
+  <section class="sec"><h2>Всё о расходах на машину в одном месте</h2><p class="lead">Не таблица и не блокнот. Дашборд, который считает за вас.</p>
+    <div class="feats">
+      <div class="feat"><div class="ic">${ic("list")}</div><h3>Учёт расходов</h3><p>12 категорий: от топлива до лизинга. Фильтры по периоду, категории и автомобилю.</p></div>
+      <div class="feat"><div class="ic">${ic("chart")}</div><h3>Аналитика</h3><p>Расходы по месяцам и категориям, стоимость километра, фактический расход топлива.</p></div>
+      <div class="feat"><div class="ic">${ic("calc")}</div><h3>Калькулятор и симулятор</h3><p>Что будет с бюджетом, если бензин подорожает или вы станете ездить больше.</p></div>
+      <div class="feat"><div class="ic">${ic("spark")}</div><h3>ИИ-ассистент</h3><p>Отвечает на вопросы по вашим данным и не выдумывает цифры. Если данных мало, так и скажет.</p></div>
+    </div></section>
+  <section class="sec"><h2>Спросите ИИ о своих расходах</h2><p class="lead">Ассистент видит ваши расходы и отвечает по делу.</p>
+    <div class="qlist">${["Почему мои расходы выросли?","На что я трачу больше всего?","Как снизить расходы?","Сколько автомобиль будет стоить мне за год?","Что будет, если топливо подорожает?","Что будет, если я начну ездить больше?"].map(q=>`<div class="q">${ic("spark")}${q}</div>`).join("")}</div></section>
+  <section class="sec"><h2>Тарифы</h2><p class="lead">Начните бесплатно, подключите AI Pro, когда понадобится больше.</p>${plansHTML(false)}</section>
+  <footer class="footer"><span>CarCost AI · MVP</span><span>Данные хранятся в вашем браузере</span></footer></div></div>`; },
+login(){ return `<div class="pub"><div class="wrap">${pubNav()}<div class="authwrap"><form class="authcard" id="loginF" novalidate>
+  <div><h1>Вход</h1><p>С возвращением! Войдите, чтобы увидеть свои расходы.</p></div>
+  <label class="field"><span>Email</span><input class="inp" name="email" type="email" autocomplete="email" placeholder="you@mail.com"><div class="ferr" data-err="email"></div></label>
+  <label class="field"><span>Пароль</span><input class="inp" name="password" type="password" autocomplete="current-password"><div class="ferr" data-err="password"></div></label>
+  <button class="btn primary lg block" type="submit">Войти</button>
+  <div class="divider">или</div><button class="btn block" type="button" id="demoBtn">${ic("user")}Войти в демо-аккаунт</button>
+  <p class="note" style="text-align:center">Нет аккаунта? <a href="#register">Зарегистрируйтесь</a></p></form></div></div></div>`; },
+register(){ return `<div class="pub"><div class="wrap">${pubNav()}<div class="authwrap"><form class="authcard" id="regF" novalidate>
+  <div><h1>Регистрация</h1><p>Бесплатно. Банковская карта не нужна.</p></div>
+  <label class="field"><span>Имя</span><input class="inp" name="name" autocomplete="name" placeholder="Анна"><div class="ferr" data-err="name"></div></label>
+  <label class="field"><span>Email</span><input class="inp" name="email" type="email" autocomplete="email" placeholder="you@mail.com"><div class="ferr" data-err="email"></div></label>
+  <label class="field"><span>Пароль</span><input class="inp" name="password" type="password" autocomplete="new-password" placeholder="Минимум 8 символов"><div class="ferr" data-err="password"></div></label>
+  <button class="btn primary lg block" type="submit">Создать аккаунт</button>
+  <p class="note" style="text-align:center">Уже есть аккаунт? <a href="#login">Войти</a></p>
+  <p class="note" style="text-align:center;font-size:12px">MVP: аккаунт и данные хранятся в этом браузере.</p></form></div></div></div>`; },
+
+dashboard(){
+  const d=Data.get(); if(!d.cars.length) return topbar("Главная","Добро пожаловать, "+ME.name)+emptyCars();
+  const cars=d.cars; const sel=UI.dashCar==="all"?"all":(d.activeCar||cars[0].id);
+  const hist=Plan.historyFrom(d); const list=Calc.forCar(d.expenses,sel).filter(e=>e.date>=hist+"-01");
+  const cur=mkey(new Date()); const mom=Calc.mom(list); const yearT=Calc.sum(Calc.inYear(list,new Date().getFullYear()).filter(e=>e.date>=hist));
+  const avg=Calc.avgMonthly(list); const selCars=sel==="all"?cars:cars.filter(c=>c.id===sel); const km=selCars.reduce((a,c)=>a+Calc.kmInMonth(list,c,addMonths(cur,-1)),0);
+  const cpk=Calc.costPerKm(avg,km); const odo=selCars.reduce((a,c)=>a+c.mileage,0); const fuelM=Calc.sum(Calc.inMonth(list,cur).filter(e=>e.category==="fuel"));
+  const n=Plan.get(d).historyMonths===Infinity?12:6;
+  const chg=mom.pct==null?`<span class="chip">нет данных за прошлый месяц</span>`:`<span class="chip ${mom.diff>0?"bad":"good"}">${ic(mom.diff>0?"up":"down")}${mom.diff>0?"+":"−"}${numf(Math.abs(mom.pct)*100,1)}%</span><span>к ${MONTHS_DAT[mNum(addMonths(cur,-1))]}</span>`;
+  const recent=[...list].sort((a,b)=>b.date.localeCompare(a.date)||0).slice(0,6);
+  const carSel=cars.length>1?`<select class="inp" id="dashCar" style="width:auto">${`<option value="active" ${UI.dashCar!=="all"?"selected":""}>${esc((cars.find(c=>c.id===d.activeCar)||cars[0]).brand+" "+(cars.find(c=>c.id===d.activeCar)||cars[0]).model)}</option><option value="all" ${UI.dashCar==="all"?"selected":""}>Все автомобили</option>`}</select>`:"";
+  const catList=UI.catPeriod==="month"?Calc.inMonth(list,cur):list.filter(e=>e.date>=addMonths(cur,-11)+"-01");
+  return topbar(greet()+", "+esc(ME.name.split(" ")[0]),(sel==="all"?"Все автомобили":esc(selCars[0].brand+" "+selCars[0].model+" · "+selCars[0].year))+" · "+mLabel(cur),`${carSel}<button class="btn primary" data-act="addExpense">${ic("plus")}Добавить расход</button>`)+`
+  <div class="kpis">
+    ${kpi("calendar","Расходы за "+mLabel(cur).split(" ")[0],eur2(mom.cur),chg)}
+    ${kpi("chart","Расходы за "+new Date().getFullYear()+" год",eur(yearT),`<span>с 1 января${hist>new Date().getFullYear()+"-01"?", в пределах истории тарифа":""}</span>`)}
+    ${kpi("trend","В среднем в месяц",eur2(avg),`<span>по полным месяцам истории</span>`)}
+    ${kpi("road","Стоимость 1 км",numf(cpk,2)+" €",`<span>при ~${numf(km)} км в месяц</span>`)}
+    ${kpi("gauge","Пробег",numf(odo)+" км",`<span>~${numf(selCars.reduce((a,c)=>a+c.monthlyKm,0))} км в месяц</span>`)}
+    ${kpi("fuel","Топливо за "+mLabel(cur).split(" ")[0],eur2(fuelM),`<span>${mom.cur?numf(fuelM/mom.cur*100,0)+"% всех расходов месяца":"расходов пока нет"}</span>`)}
+  </div>
+  <div class="cols">
+    <div class="card"><div class="ch"><div><h2>Расходы по месяцам</h2><div class="sub">Последние ${n} ${plural(n,"месяц","месяца","месяцев")}${n===6?" · 12 месяцев в AI Pro":""}</div></div>
+      <div class="seg" role="tablist"><button class="${UI.chartView==="chart"?"on":""}" data-view="chart">График</button><button class="${UI.chartView==="table"?"on":""}" data-view="table">Таблица</button></div></div>
+      <div id="mchart"></div></div>
+    <div class="card"><div class="ch"><div><h2>По категориям</h2><div class="sub">${UI.catPeriod==="month"?mLabelCap(cur):"12 месяцев"} · ${eur(Calc.sum(catList))}</div></div>
+      <div class="seg"><button class="${UI.catPeriod==="month"?"on":""}" data-cp="month">Месяц</button><button class="${UI.catPeriod==="year"?"on":""}" data-cp="year">12 мес.</button></div></div>
+      ${hbars(Calc.byCategory(catList).slice(0,7))}</div>
+  </div>
+  <div class="card"><div class="ch"><div><h2>Последние расходы</h2></div><a class="btn sm" href="#expenses">Все расходы</a></div>
+    ${recent.length?`<div class="rlist">${recent.map(e=>`<div class="ritem"><div class="cic">${ic(CATS[e.category].i)}</div><div style="min-width:0"><b>${CATS[e.category].n}</b><span>${dLabel(e.date)}${e.note?" · "+esc(e.note):""}</span></div><div class="amt">${eur2(e.amount)}</div></div>`).join("")}</div>`:`<div class="note">Расходов пока нет. Нажмите «Добавить расход».</div>`}</div>`;
+},
+cars(){
+  const d=Data.get(); const p=Plan.get(d);
+  const acts=`<button class="btn primary" data-act="addCar">${ic("plus")}Добавить автомобиль</button>`;
+  if(!d.cars.length) return topbar("Мои автомобили","Добавьте машину, чтобы начать учёт",acts)+emptyCars();
+  const cur=mkey(new Date());
+  return topbar("Мои автомобили",`${d.cars.length} ${plural(d.cars.length,"автомобиль","автомобиля","автомобилей")}${p.cars===1?" · на бесплатном тарифе доступен 1":""}`,acts)+`<div class="cars">${d.cars.map(c=>{
+    const L=d.expenses.filter(e=>e.carId===c.id); const act=c.id===d.activeCar;
+    return `<div class="card carcard ${act?"active":""}"><div class="ttl"><div class="cic">${ic("car")}</div><div style="flex:1;min-width:0"><h3>${esc(c.brand)} ${esc(c.model)}</h3><div class="note">${c.year} · ${esc(c.fuel)} · ${esc(c.gearbox)}</div></div>${act?`<span class="chip accent">Активный</span>`:""}</div>
+      <div class="specs"><div class="spec"><span>Пробег</span><b>${numf(c.mileage)} км</b></div><div class="spec"><span>Расход</span><b>${numf(c.consumption,1)} ${c.fuel==="Электро"?"кВт·ч":"л"}/100</b></div>
+        <div class="spec"><span>В месяц</span><b>${numf(c.monthlyKm)} км</b></div><div class="spec"><span>Расходы за ${mLabel(cur).split(" ")[0]}</span><b>${eur2(Calc.sum(Calc.inMonth(L,cur)))}</b></div></div>
+      <div class="acts">${act?"":`<button class="btn sm" data-carAct="activate" data-id="${c.id}">Сделать активным</button>`}<button class="btn sm" data-carAct="edit" data-id="${c.id}">${ic("edit")}Изменить</button><button class="btn sm danger" data-carAct="del" data-id="${c.id}">${ic("trash")}Удалить</button></div></div>`; }).join("")}</div>
+    ${p.cars===1?`<div class="banner info" style="margin-top:16px">${ic("crown")}<div>Нужен второй автомобиль? В AI Pro можно вести сколько угодно машин. <a href="#pricing">Посмотреть тарифы</a></div></div>`:""}`;
+},
+expenses(){
+  const d=Data.get(); if(!d.cars.length) return topbar("Расходы","Сначала добавьте автомобиль")+emptyCars();
+  const fx=UI.fx; const hist=Plan.historyFrom(d); const cur=mkey(new Date());
+  const from={month:cur+"-01","3m":addMonths(cur,-2)+"-01","6m":addMonths(cur,-5)+"-01","12m":addMonths(cur,-11)+"-01",all:"0000",custom:fx.from||"0000"}[fx.period];
+  const to=fx.period==="custom"&&fx.to?fx.to:"9999";
+  let list=d.expenses.filter(e=>e.date>=hist+"-01"&&e.date>=from&&e.date<=to&&(fx.cat==="all"||e.category===fx.cat)&&(fx.car==="all"||e.carId===fx.car));
+  if(fx.q){ const q=fx.q.toLowerCase(); list=list.filter(e=>(e.note||"").toLowerCase().includes(q)||CATS[e.category].n.toLowerCase().includes(q)||String(e.amount).includes(q)); }
+  list.sort(fx.sort==="amount"?(a,b)=>b.amount-a.amount:(a,b)=>b.date.localeCompare(a.date));
+  const hidden=d.expenses.filter(e=>e.date<hist+"-01").length; const carName=id=>{ const c=d.cars.find(c=>c.id===id); return c?c.brand+" "+c.model:"—"; };
+  return topbar("Расходы","Все траты на автомобиль",`<button class="btn primary" data-act="addExpense">${ic("plus")}Добавить расход</button>`)+`
+  <div class="card">
+    <div class="filters">
+      <label class="field wide"><span>Поиск</span><input class="inp" id="fq" value="${esc(fx.q)}" placeholder="Комментарий, категория или сумма"></label>
+      <label class="field"><span>Категория</span><select class="inp" id="fcat"><option value="all">Все категории</option>${CAT_KEYS.map(k=>`<option value="${k}" ${fx.cat===k?"selected":""}>${CATS[k].n}</option>`).join("")}</select></label>
+      ${d.cars.length>1?`<label class="field"><span>Автомобиль</span><select class="inp" id="fcar"><option value="all">Все</option>${d.cars.map(c=>`<option value="${c.id}" ${fx.car===c.id?"selected":""}>${esc(c.brand+" "+c.model)}</option>`).join("")}</select></label>`:""}
+      <label class="field"><span>Период</span><select class="inp" id="fper">${[["month","Этот месяц"],["3m","3 месяца"],["6m","6 месяцев"],["12m","12 месяцев"],["all","Всё время"],["custom","Свой период"]].map(([v,n])=>`<option value="${v}" ${fx.period===v?"selected":""}>${n}</option>`).join("")}</select></label>
+      ${fx.period==="custom"?`<label class="field"><span>С</span><input class="inp" type="date" id="ffrom" value="${esc(fx.from)}"></label><label class="field"><span>По</span><input class="inp" type="date" id="fto" value="${esc(fx.to)}"></label>`:""}
+      ${(fx.q||fx.cat!=="all"||fx.car!=="all"||fx.period!=="6m")?`<button class="btn ghost" id="freset">Сбросить</button>`:""}
+    </div>
+    <div class="sumbar"><span>${list.length} ${plural(list.length,"расход","расхода","расходов")}</span><span>Итого: <b>${eur2(Calc.sum(list))}</b></span></div>
+    ${list.length?`<table class="xt"><thead><tr><th data-sort="date">Дата ${fx.sort==="date"?"↓":""}</th><th>Категория</th>${d.cars.length>1?"<th>Авто</th>":""}<th>Комментарий</th><th class="amt" data-sort="amount" style="text-align:right">Сумма ${fx.sort==="amount"?"↓":""}</th><th></th></tr></thead><tbody>
+      ${list.map(e=>`<tr><td class="d num">${dLabel(e.date)}</td><td class="c"><div class="cat"><div class="cic">${ic(CATS[e.category].i)}</div><b style="font-weight:600">${CATS[e.category].n}</b></div></td>${d.cars.length>1?`<td class="car">${esc(carName(e.carId))}</td>`:""}
+        <td class="nt"><div class="note">${esc(e.note||"")}${e.liters?` · ${numf(e.liters,1)} л`:""}${e.odometer?` · ${numf(e.odometer)} км`:""}</div></td><td class="amt">${eur2(e.amount)}</td>
+        <td class="acts"><button class="btn icon ghost" data-ex="edit" data-id="${e.id}" aria-label="Редактировать">${ic("edit")}</button><button class="btn icon ghost danger" data-ex="del" data-id="${e.id}" aria-label="Удалить">${ic("trash")}</button></td></tr>`).join("")}</tbody></table>`
+      :`<div class="empty"><div class="ic">${ic("filter")}</div><h3>Ничего не найдено</h3><p>Под эти фильтры не подходит ни один расход. Измените период или категорию.</p></div>`}
+    ${hidden?`<div class="banner info" style="margin-top:14px">${ic("lock")}<div>Ещё ${hidden} ${plural(hidden,"расход","расхода","расходов")} старше 6 месяцев скрыты. Вся история доступна в AI Pro. <button class="btn sm primary" data-act="upgrade" data-reason="На бесплатном тарифе видна история за 6 месяцев. В AI Pro — вся история расходов." style="margin-left:6px">Открыть историю</button></div></div>`:""}
+  </div>`;
+},
+analytics(){
+  const d=Data.get(); if(!d.cars.length) return topbar("Аналитика","")+emptyCars();
+  const p=Plan.get(d); const hist=Plan.historyFrom(d); const car=d.cars.find(c=>c.id===d.activeCar)||d.cars[0];
+  const list=d.expenses.filter(e=>e.carId===car.id&&e.date>=hist+"-01"); const n=p.advanced?UI.anMonths:6;
+  const cur=mkey(new Date()); const months=Calc.monthSeries(list,12).filter(m=>m.key>=hist).map(m=>m.key);
+  if(!UI.cmpB||!months.includes(UI.cmpB)) UI.cmpB=cur; if(!UI.cmpA||!months.includes(UI.cmpA)) UI.cmpA=addMonths(UI.cmpB,-1);
+  const f=Calc.fuel(list,car); const fc=Calc.forecast(list); const per=list.filter(e=>e.date>=addMonths(cur,-(n-1))+"-01");
+  const cmp=Calc.compareMonths(list,UI.cmpA,UI.cmpB); const tA=Calc.sum(Calc.inMonth(list,UI.cmpA)), tB=Calc.sum(Calc.inMonth(list,UI.cmpB));
+  const fcHTML=fc?`<div class="kpis mini">${kpi("trend","Прогноз на 12 месяцев",eur(fc.year),`<span>по ${fc.basis} полным месяцам</span>`)}${kpi("calendar","В среднем в месяц",eur2(fc.monthly),"")}${kpi("chart","Вероятный диапазон",eur(fc.low)+" – "+eur(fc.high),"")}</div><div id="fchart"></div>`:`<div class="note">Нужны расходы хотя бы за 3 полных месяца, чтобы построить прогноз.</div>`;
+  return topbar("Аналитика",esc(car.brand+" "+car.model)+" · "+(n===12?"12 месяцев":"6 месяцев"),`<div class="seg"><button class="${n===6?"on":""}" data-an="6">6 мес.</button><button class="${n===12?"on":""}" data-an="12">12 мес.${p.advanced?"":" · Pro"}</button></div>`)+`
+  <div class="cols even">
+    <div class="card"><div class="ch"><div><h2>Расходы по месяцам</h2><div class="sub">Итого ${eur(Calc.sum(per))} · в среднем ${eur(Calc.sum(per)/n)}</div></div></div><div id="a1"></div></div>
+    <div class="card"><div class="ch"><div><h2>По категориям</h2><div class="sub">За ${n} ${plural(n,"месяц","месяца","месяцев")}</div></div></div>${hbars(Calc.byCategory(per))}</div>
+  </div>
+  <div class="cols even">
+    <div class="card"><div class="ch"><div><h2>Стоимость 1 км</h2><div class="sub">Расходы месяца ÷ пробег месяца (по одометру или среднему пробегу)</div></div></div><div id="a2"></div></div>
+    <div class="card"><div class="ch"><div><h2>Топливо</h2><div class="sub">По заправкам с указанными литрами</div></div></div>
+      <div class="specs" style="margin-bottom:14px"><div class="spec"><span>Фактический расход</span><b>${f.cons?numf(f.cons,1)+" л/100 км":"нет данных"}</b></div><div class="spec"><span>Паспортный / заявленный</span><b>${numf(car.consumption,1)} л/100 км</b></div>
+        <div class="spec"><span>Средняя цена</span><b>${f.price?numf(f.price,2)+" €/л":"нет данных"}</b></div><div class="spec"><span>Заправлено</span><b>${numf(f.liters,0)} л</b></div></div>
+      <div id="a3"></div>${!f.cons?`<div class="note">Чтобы видеть фактический расход, указывайте литры и пробег по одометру при заправке.</div>`:""}</div>
+  </div>
+  <div class="cols even">
+    <div class="card"><div class="ch"><div><h2>Сравнение месяцев</h2><div class="sub">${eur2(tA)} → ${eur2(tB)} · <span class="delta ${tB>tA?"up":"down"}">${tB>=tA?"+":"−"}${eur2(Math.abs(tB-tA))}</span></div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><select class="inp" id="cmpA" style="width:auto">${months.map(k=>`<option value="${k}" ${k===UI.cmpA?"selected":""}>${mLabelCap(k)}</option>`).join("")}</select><select class="inp" id="cmpB" style="width:auto">${months.map(k=>`<option value="${k}" ${k===UI.cmpB?"selected":""}>${mLabelCap(k)}</option>`).join("")}</select></div></div>
+      ${cmp.length?`<div class="scrollx"><table class="dtable"><thead><tr><th>Категория</th><th class="r">${mLabel(UI.cmpA,true)}</th><th class="r">${mLabel(UI.cmpB,true)}</th><th class="r">Разница</th></tr></thead><tbody>${cmp.map(r=>`<tr><td>${CATS[r.cat].n}</td><td class="r">${eur2(r.a)}</td><td class="r">${eur2(r.b)}</td><td class="r"><span class="delta ${r.diff>0?"up":r.diff<0?"down":""}">${r.diff>0?"+":r.diff<0?"−":""}${eur2(Math.abs(r.diff))}</span></td></tr>`).join("")}</tbody></table></div>`:`<div class="note">В выбранных месяцах нет расходов.</div>`}</div>
+    <div class="card ${p.forecast?"":"locked"}"><div class="ch"><div><h2>Прогноз расходов на год</h2><div class="sub">Средние расходы × 12 месяцев</div></div>${p.forecast?"":`<span class="chip accent">${ic("crown")}AI Pro</span>`}</div>
+      ${p.forecast?fcHTML:`<div class="blur">${fcHTML}</div><div class="lockov"><div>${ic("lock")}<b>Прогноз доступен в AI Pro</b><span class="note">Узнайте, во сколько автомобиль обойдётся за год, с диапазоном и графиком.</span><button class="btn primary" data-act="upgrade" data-reason="Прогноз расходов на год и расширенная аналитика доступны в AI Pro.">Перейти на AI Pro</button></div></div>`}</div>
+  </div>`;
+},
+calculator(){
+  const d=Data.get(); const car=d.cars.find(c=>c.id===d.activeCar)||d.cars[0]||null;
+  if(!UI.calc) UI.calc=Calc.calcDefaults(d.expenses,car); const c=UI.calc;
+  if(!UI.sim) UI.sim={price:c.price,km:c.km,cons:c.cons};
+  const fld=(n,l,step="1",hint="")=>`<label class="field"><span>${l}</span><input class="inp num" name="${n}" type="number" min="0" step="${step}" inputmode="decimal" value="${c[n]}">${hint?`<div class="note">${hint}</div>`:""}<div class="ferr" data-err="${n}"></div></label>`;
+  return topbar("Калькулятор","Стоимость владения автомобилем",car?`<button class="btn" id="fillMine">${ic("car")}Заполнить из моих данных</button>`:"")+`
+  <div class="calc">
+    <div class="card"><div class="ch"><h2>Исходные данные</h2></div>
+      <form id="calcF" novalidate style="display:grid;gap:12px">
+        <div class="grid3">${fld("km","Пробег в месяц, км")}${fld("cons","Расход, л/100 км","0.1")}${fld("price","Цена топлива, €/л","0.01")}</div>
+        <div class="grid2">${fld("insurance","Страховка, € в год","1")}${fld("service","Обслуживание, € в месяц","1")}</div>
+        <div class="grid2">${fld("parking","Парковка, € в месяц","1")}${fld("tax","Налоги, € в год","1")}</div>
+        ${fld("loan","Кредит / лизинг, € в месяц","1")}
+      </form></div>
+    <div class="stack"><div class="card"><div class="ch"><h2>Результат</h2></div><div id="calcRes"></div></div></div>
+  </div>
+  <div class="card" style="margin-top:16px"><div class="ch"><div><h2>Симулятор «что если»</h2><div class="sub">Двигайте ползунки: расчёт обновляется сразу. База — данные калькулятора выше.</div></div><button class="btn sm" id="simReset">Сбросить</button></div>
+    <div class="calc">
+      <div style="display:grid;gap:20px">
+        ${slider("price","Цена топлива",0.8,3.5,0.01,v=>numf(v,2)+" €/л")}
+        ${slider("km","Пробег в месяц",100,6000,50,v=>numf(v)+" км")}
+        ${slider("cons","Расход топлива",2,20,0.1,v=>numf(v,1)+" л/100 км")}
+      </div>
+      <div id="simRes"></div>
+    </div></div>`;
+},
+ai(){
+  const d=Data.get(); const p=Plan.get(d); const left=Plan.aiLeft(d); const blocked=left<=0; const prov={mock:"Демо-режим (без API-ключа)",openai:"OpenAI",anthropic:"Anthropic"}[d.ai.provider]||"Демо";
+  const qs=["Почему мои расходы выросли?","На что я трачу больше всего?","Как снизить расходы?","Сколько автомобиль будет стоить мне за год?","Что будет, если топливо подорожает на 15%?","Что будет, если я начну ездить больше?"];
+  return topbar("ИИ-ассистент","Отвечает по вашим данным и не придумывает цифры",`<span class="chip ${p.id==="pro"?"accent":""}">${p.id==="pro"?"AI Pro · безлимит":`Осталось запросов: ${left} из ${p.aiPerMonth}`}</span>`)+`
+  <div class="ai">
+    <div class="card chatbox"><div class="msgs" id="msgs">${d.chat.length?d.chat.map(msgHTML).join(""):`<div class="empty" style="padding:28px 10px"><div class="ic">${ic("spark")}</div><h3>Спросите о своих расходах</h3><p>Ассистент видит расходы активного автомобиля за 12 месяцев. Если данных не хватает, он так и скажет.</p></div>`}</div>
+      <div class="composer">
+        ${blocked?`<div class="paywall"><h3>${ic("lock")}Бесплатные запросы на этот месяц закончились</h3><p>На бесплатном тарифе доступно ${p.aiPerMonth} запросов в месяц. Лимит обновится 1-го числа. В AI Pro запросы не ограничены.</p><div><button class="btn primary" data-act="upgrade" data-reason="Вы использовали все бесплатные запросы к ИИ в этом месяце. В AI Pro запросы не ограничены.">${ic("crown")}Перейти на AI Pro</button></div></div>`:`
+        <div class="qchips">${qs.map(q=>`<button class="qchip" data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div>
+        <form class="row" id="aiF"><textarea class="inp" id="aiIn" rows="1" placeholder="Задайте вопрос о расходах…" maxlength="500"></textarea><button class="btn primary icon" style="width:46px;height:46px" type="submit" aria-label="Отправить" ${UI.busy?"disabled":""}>${ic("send")}</button></form>`}
+      </div></div>
+    <div class="stack">
+      <div class="card"><h2 style="margin-bottom:10px">Ваш тариф</h2><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b>${p.name}</b><span class="chip ${p.id==="pro"?"accent":""}">${p.id==="pro"?"9,99 € / мес":"0 €"}</span></div>
+        ${p.id==="pro"?`<div class="note">Запросы к ИИ без ограничений.</div>`:`<div class="note" style="margin-bottom:8px">Использовано ${Plan.aiUsed(d)} из ${p.aiPerMonth} запросов в ${MONTHS_PREP[mNum(mkey(new Date()))]}</div><div class="meter"><i style="width:${Plan.aiUsed(d)/p.aiPerMonth*100}%"></i></div>
+        <button class="btn primary block" style="margin-top:12px" data-act="upgrade" data-reason="Безлимитные запросы к ИИ, прогнозы и персональные рекомендации.">${ic("crown")}Перейти на AI Pro</button>`}</div>
+      <div class="card"><h2 style="margin-bottom:10px">Модель</h2><div class="note" style="margin-bottom:10px">${esc(prov)}</div>
+        ${d.ai.provider==="mock"?`<div class="banner">${ic("info")}<div>API-ключ не подключён. Ответы считаются по вашим данным правилами, без нейросети. Подключить OpenAI или Anthropic можно в <a href="#settings">настройках</a>.</div></div>`:`<div class="note">Если API недоступен, ассистент покажет демо-ответ и предупредит об этом.</div>`}
+        ${d.chat.length?`<button class="btn sm ghost" id="clearChat" style="margin-top:10px">${ic("trash")}Очистить историю</button>`:""}</div>
+    </div>
+  </div>`;
+},
+pricing(){ const d=Data.get(); const p=Plan.get(d); return topbar("Тарифы",`Текущий тариф: ${p.name}${d.planSince?" · с "+new Date(d.planSince).toLocaleDateString("ru-RU"):""}`)+plansHTML(true)+`<div class="banner info" style="margin-top:16px;max-width:860px">${ic("info")}<div>Оплата через Stripe пока не подключена. Переключение тарифов работает в тестовом режиме: деньги не списываются, всё можно проверить.</div></div>`; },
+settings(){
+  const d=Data.get(); const p=Plan.get(d);
+  return topbar("Настройки","Профиль, внешний вид, ИИ и данные")+`<div class="set">
+  <div class="card"><h2 style="margin-bottom:6px">Профиль</h2>
+    <form id="profF" novalidate style="display:grid;gap:12px;margin-top:10px"><div class="grid2"><label class="field"><span>Имя</span><input class="inp" name="name" value="${esc(ME.name)}"><div class="ferr" data-err="name"></div></label><label class="field"><span>Email</span><input class="inp" value="${esc(ME.email)}" disabled></label></div>
+    <div><button class="btn" type="submit">Сохранить имя</button></div></form></div>
+  <div class="card"><h2>Оформление</h2>
+    <div class="setrow"><div class="t"><b>Тема</b><span>Светлая, тёмная или как в системе</span></div><div class="seg">${[["system","Системная"],["light","Светлая"],["dark","Тёмная"]].map(([v,n])=>`<button class="${d.theme===v?"on":""}" data-theme-set="${v}">${n}</button>`).join("")}</div></div>
+    <div class="setrow"><div class="t"><b>Валюта</b><span>Все суммы в евро</span></div><span class="chip">EUR €</span></div></div>
+  <div class="card"><h2>Подписка</h2>
+    <div class="setrow"><div class="t"><b>${p.name}</b><span>${p.id==="pro"?"Безлимитный ИИ, прогнозы, несколько автомобилей":`Осталось ИИ-запросов: ${Plan.aiLeft(d)} из ${p.aiPerMonth}`}</span></div>
+      ${p.id==="pro"?`<button class="btn danger" id="cancelSub">Отменить подписку</button>`:`<button class="btn primary" data-act="upgrade" data-reason="Откройте безлимитный ИИ и расширенную аналитику.">${ic("crown")}Перейти на AI Pro</button>`}</div></div>
+  <div class="card"><h2>ИИ-провайдер</h2><p class="note" style="margin:4px 0 12px">Без ключа работает демо-режим. Ключ хранится только в этом браузере. Для продакшна запросы должны идти через сервер, чтобы ключ не попадал к пользователям.</p>
+    <form id="aiSetF" novalidate style="display:grid;gap:12px">
+      <div class="grid2"><label class="field"><span>Провайдер</span><select class="inp" name="provider">${[["mock","Демо (без API)"],["openai","OpenAI"],["anthropic","Anthropic"]].map(([v,n])=>`<option value="${v}" ${d.ai.provider===v?"selected":""}>${n}</option>`).join("")}</select></label>
+        <label class="field"><span>Модель</span><input class="inp" name="model" value="${esc(d.ai.model)}" placeholder="${d.ai.provider==="anthropic"?"claude-haiku-4-5-20251001":"gpt-4o-mini"}"></label></div>
+      <label class="field"><span>API-ключ</span><input class="inp" name="key" type="password" autocomplete="off" value="${esc(d.ai.key)}" placeholder="sk-…"><div class="ferr" data-err="key"></div></label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">Сохранить</button><button class="btn" type="button" id="aiTest">Проверить подключение</button></div></form></div>
+  <div class="card"><h2>Данные</h2>
+    <div class="setrow"><div class="t"><b>Демо-данные</b><span>BMW 320i 2021 и расходы за 12 месяцев</span></div><button class="btn" data-act="loadDemo">Загрузить</button></div>
+    <div class="setrow"><div class="t"><b>Удалить все расходы и автомобили</b><span>Аккаунт останется</span></div><button class="btn danger" id="wipe">Удалить данные</button></div>
+    <div class="setrow"><div class="t"><b>Выйти из аккаунта</b><span>${esc(ME.email)}</span></div><button class="btn" data-act="logout">${ic("logout")}Выйти</button></div>
+    <div class="setrow"><div class="t"><b>Удалить аккаунт</b><span>Удалит пользователя и все его данные</span></div><button class="btn danger" id="delAcc">Удалить аккаунт</button></div>
+    ${persistent?"":`<div class="banner">${ic("alert")}<div>Браузер запретил сохранение данных (например, в приватном окне). После перезагрузки страницы всё сбросится.</div></div>`}</div>
+  </div>`;
+}
+};
+function topbar(t,s,acts=""){ return `<div class="topbar"><div><h1>${t}</h1>${s?`<p>${s}</p>`:""}</div>${acts?`<div class="acts">${acts}</div>`:""}</div>`; }
+function kpi(i,l,v,s){ return `<div class="kpi"><div class="l">${ic(i)}${l}</div><div class="v" title="${esc(v)}">${v}</div>${s?`<div class="s">${s}</div>`:""}</div>`; }
+function greet(){ const h=new Date().getHours(); return h<5?"Доброй ночи":h<12?"Доброе утро":h<18?"Добрый день":"Добрый вечер"; }
+function emptyCars(){ return `<div class="card"><div class="empty"><div class="ic">${ic("car")}</div><h3>Добавьте первый автомобиль</h3><p>Укажите марку, модель, пробег и расход топлива. Или загрузите демо-данные, чтобы посмотреть, как всё работает.</p><div class="row"><button class="btn primary" data-act="addCar">${ic("plus")}Добавить автомобиль</button><button class="btn" data-act="loadDemo">Загрузить демо-данные</button></div></div></div>`; }
+function slider(k,l,min,max,step,fmt){ const v=UI.sim[k]; return `<div class="slider"><div class="top"><span>${l}</span><b id="sv_${k}">${fmt(v)}</b></div><input type="range" data-sim="${k}" min="${min}" max="${max}" step="${step}" value="${v}" aria-label="${l}"><div class="sc"><span>${fmt(min)}</span><span>${fmt(max)}</span></div></div>`; }
+function plansHTML(inApp){
+  const cur=ME?Plan.get().id:null;
+  const li=(t,no)=>`<li class="${no?"no":""}">${ic(no?"x":"check")}<span>${t}</span></li>`;
+  return `<div class="plans">
+    <div class="card plan"><div><h2 style="font-size:18px">Бесплатный</h2><div class="note">Для учёта расходов одной машины</div></div><div class="pr num">0 €<small> / мес</small></div>
+      <ul>${li("1 автомобиль")}${li("Базовый учёт расходов, история 6 месяцев")}${li("Базовая аналитика")}${li("Калькулятор и симулятор")}${li("5 запросов к ИИ в месяц")}${li("Прогноз расходов на год",1)}</ul>
+      ${inApp?(cur==="free"?`<button class="btn block" disabled>Текущий тариф</button>`:`<button class="btn block" id="toFree">Перейти на бесплатный</button>`):`<a class="btn block" href="#register">Начать бесплатно</a>`}</div>
+    <div class="card plan pro"><div style="display:flex;justify-content:space-between;align-items:start"><div><h2 style="font-size:18px">AI Pro</h2><div class="note">Для тех, кто хочет тратить меньше</div></div><span class="chip accent">${ic("crown")}Популярный</span></div><div class="pr num">9,99 €<small> / мес</small></div>
+      <ul>${li("Неограниченные запросы к ИИ")}${li("Расширенный анализ и аналитика за 12 месяцев")}${li("Прогнозирование расходов")}${li("Персональные рекомендации по экономии")}${li("What-if симуляции")}${li("Несколько автомобилей")}${li("История всех расходов")}</ul>
+      ${inApp?(cur==="pro"?`<button class="btn block" disabled>${ic("check")}Текущий тариф</button>`:`<button class="btn primary block" data-act="upgrade" data-reason="Безлимитный ИИ, прогнозы, несколько автомобилей и вся история.">${ic("crown")}Перейти на AI Pro</button>`):`<a class="btn primary block" href="#register">Попробовать AI Pro</a>`}</div>
+  </div>`;
+}
+function msgHTML(m){ return m.role==="user"?`<div class="msg u">${esc(m.text)}</div>`:`<div class="msg a">${esc(m.text)}<div class="meta">${ic(m.source==="mock"?"info":"spark")}${m.source==="mock"?"Демо-ответ: рассчитан по вашим данным без нейросети":"Ответ "+esc(m.source)}${m.warn?" · "+esc(m.warn):""}</div></div>`; }
+
+/* ---------------- page behaviours ---------------- */
+async function demoLogin(){
+  let u=Auth.users().find(x=>x.email==="demo@carcost.app");
+  if(!u){ await Auth.register({name:"Демо Пользователь",email:"demo@carcost.app",password:"demo-password"}); ME=Auth.current(); loadDemo(); }
+  else { store.set("cc:session",u.id); ME=u; }
+  toast("Вы вошли в демо-аккаунт"); location.hash="dashboard"; render();
+}
+const After={
+  landing(){ $("#demoBtn").onclick=demoLogin; },
+  login(){ $("#demoBtn").onclick=demoLogin; $("#loginF").addEventListener("submit",async e=>{ e.preventDefault(); const r=await Auth.login(formData(e.target)); if(r.errors){ showErrors(e.target,r.errors); return; } toast("С возвращением, "+r.user.name); location.hash="dashboard"; }); },
+  register(){ $("#regF").addEventListener("submit",async e=>{ e.preventDefault(); const r=await Auth.register(formData(e.target)); if(r.errors){ showErrors(e.target,r.errors); return; } toast("Аккаунт создан"); location.hash="dashboard"; }); },
+  dashboard(){
+    const d=Data.get(); if(!d.cars.length) return; const sel=UI.dashCar==="all"?"all":(d.activeCar||d.cars[0].id); const hist=Plan.historyFrom(d);
+    const list=Calc.forCar(d.expenses,sel).filter(e=>e.date>=hist+"-01"); const n=Plan.get(d).historyMonths===Infinity?12:6;
+    const ser=Calc.monthSeries(list,n); const el=$("#mchart");
+    if(UI.chartView==="table") el.innerHTML=monthTable([...ser].reverse()); else barChart(el,ser.map(s=>({label:s.label,value:s.total,tip:mLabelCap(s.key)+(s.key===mkey(new Date())?" (идёт)":"")})),{hl:ser.length-1});
+    $$("[data-view]").forEach(b=>b.onclick=()=>{ UI.chartView=b.dataset.view; render(); });
+    $$("[data-cp]").forEach(b=>b.onclick=()=>{ UI.catPeriod=b.dataset.cp; render(); });
+    const ds=$("#dashCar"); if(ds) ds.onchange=()=>{ UI.dashCar=ds.value; render(); };
+  },
+  cars(){ $$("[data-carAct]").forEach(b=>b.onclick=async()=>{ const d=Data.get(); const c=d.cars.find(x=>x.id===b.dataset.id); const a=b.dataset.caract||b.getAttribute("data-carAct");
+    if(a==="edit") carForm(c);
+    if(a==="activate"){ Data.mutate(d=>d.activeCar=c.id); toast(`${c.brand} ${c.model} теперь активный`); render(); }
+    if(a==="del"){ const n=d.expenses.filter(e=>e.carId===c.id).length; if(await confirmBox(`Удалить ${c.brand} ${c.model}?`,`Вместе с автомобилем удалятся ${n} ${plural(n,"расход","расхода","расходов")}. Это нельзя отменить.`)){ Data.mutate(d=>{ d.cars=d.cars.filter(x=>x.id!==c.id); d.expenses=d.expenses.filter(e=>e.carId!==c.id); if(d.activeCar===c.id) d.activeCar=d.cars[0]?d.cars[0].id:null; }); toast("Автомобиль удалён"); render(); } } }); },
+  expenses(){
+    const fx=UI.fx; const set=(k,v)=>{ fx[k]=v; render(); };
+    const q=$("#fq"); if(q){ let t; q.addEventListener("input",()=>{ clearTimeout(t); t=setTimeout(()=>{ fx.q=q.value; const pos=q.selectionStart; render(); const n=$("#fq"); n.focus(); n.setSelectionRange(pos,pos); },250); }); }
+    [["fcat","cat"],["fcar","car"],["fper","period"],["ffrom","from"],["fto","to"]].forEach(([id,k])=>{ const el=$("#"+id); if(el) el.onchange=()=>set(k,el.value); });
+    const r=$("#freset"); if(r) r.onclick=()=>{ UI.fx={q:"",cat:"all",car:"all",period:"6m",from:"",to:"",sort:"date"}; render(); };
+    $$("[data-sort]").forEach(th=>th.onclick=()=>set("sort",th.dataset.sort));
+    $$("[data-ex]").forEach(b=>b.onclick=()=>{ const e=Data.get().expenses.find(x=>x.id===b.dataset.id); if(b.dataset.ex==="edit") expenseForm(e); else deleteExpense(e.id); });
+  },
+  analytics(){
+    const d=Data.get(); if(!d.cars.length) return; const p=Plan.get(d); const car=d.cars.find(c=>c.id===d.activeCar)||d.cars[0]; const hist=Plan.historyFrom(d);
+    const list=d.expenses.filter(e=>e.carId===car.id&&e.date>=hist+"-01"); const n=p.advanced?UI.anMonths:6; const cur=mkey(new Date());
+    const ser=Calc.monthSeries(list,n); barChart($("#a1"),ser.map(s=>({label:s.label,value:s.total,tip:mLabelCap(s.key)})),{hl:ser.length-1});
+    const cpk=Calc.cpkSeries(list,[car],n); lineChart($("#a2"),cpk.map(s=>({label:s.label,value:s.cpk,tip:mLabelCap(s.key),sub:`${eur2(s.total)} / ${numf(s.km)} км`})),{fmt:v=>numf(v,3)+" € за км"});
+    const fs=Calc.monthSeries(list.filter(e=>e.category==="fuel"),n); barChart($("#a3"),fs.map(s=>({label:s.label,value:s.total,tip:"Топливо, "+mLabel(s.key)})),{h:180,hl:fs.length-1});
+    const fc=Calc.forecast(list); const fel=$("#fchart");
+    if(fc&&fel){ const past=Calc.monthSeries(list,6).map(s=>({label:s.label,value:s.total,tip:mLabelCap(s.key)})); const fut=[1,2,3,4,5,6].map(i=>{ const k=addMonths(cur,i); return {label:mLabel(k,true),value:fc.monthly,forecast:true,tip:mLabelCap(k)}; });
+      barChart(fel,[...past,...fut],{h:200,hl:5}); }
+    $$("[data-an]").forEach(b=>b.onclick=()=>{ const v=+b.dataset.an; if(v===12&&!p.advanced){ paywall("Аналитика за 12 месяцев доступна в AI Pro."); return; } UI.anMonths=v; render(); });
+    $("#cmpA").onchange=e=>{ UI.cmpA=e.target.value; render(); }; $("#cmpB").onchange=e=>{ UI.cmpB=e.target.value; render(); };
+  },
+  calculator(){
+    const F=$("#calcF"); const upd=()=>{ const r=Schemas.calc.safeParse(formData(F)); if(!r.success){ showErrors(F,fieldErrors(r.error)); return; } showErrors(F,{}); UI.calc=r.data; drawCalc(); drawSim(); };
+    F.addEventListener("input",upd); drawCalc(); drawSim();
+    $$("[data-sim]").forEach(s=>s.addEventListener("input",()=>{ UI.sim[s.dataset.sim]=+s.value; const fm={price:v=>numf(v,2)+" €/л",km:v=>numf(v)+" км",cons:v=>numf(v,1)+" л/100 км"}[s.dataset.sim]; $("#sv_"+s.dataset.sim).textContent=fm(+s.value); drawSim(); }));
+    $("#simReset").onclick=()=>{ UI.sim={price:UI.calc.price,km:UI.calc.km,cons:UI.calc.cons}; render(); };
+    const fm=$("#fillMine"); if(fm) fm.onclick=()=>{ const d=Data.get(); const car=d.cars.find(c=>c.id===d.activeCar)||d.cars[0]; UI.calc=Calc.calcDefaults(d.expenses,car); UI.sim=null; render(); toast("Подставлены средние значения за 3 последних месяца"); };
+  },
+  ai(){
+    const d=Data.get(); const box=$("#msgs"); box.scrollTop=box.scrollHeight;
+    const cc=$("#clearChat"); if(cc) cc.onclick=async()=>{ if(await confirmBox("Очистить историю чата?","Сообщения удалятся. Лимит запросов не изменится.","Очистить")){ Data.mutate(d=>d.chat=[]); render(); } };
+    const F=$("#aiF"); if(!F) return; const inp=$("#aiIn");
+    inp.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); F.requestSubmit(); } });
+    $$("[data-q]").forEach(b=>b.onclick=()=>{ inp.value=b.dataset.q; F.requestSubmit(); });
+    F.addEventListener("submit",async e=>{ e.preventDefault(); const q=inp.value.trim(); if(!q||UI.busy) return;
+      if(Plan.aiLeft()<=0){ paywall("Вы использовали все бесплатные запросы к ИИ в этом месяце. В AI Pro запросы не ограничены."); return; }
+      UI.busy=true; Data.mutate(d=>{ d.chat.push({role:"user",text:q}); d.aiUsage[mkey(new Date())]=(d.aiUsage[mkey(new Date())]||0)+1; });
+      render(); const b=$("#msgs"); b.insertAdjacentHTML("beforeend",`<div class="msg a typing" id="typing"><i></i><i></i><i></i></div>`); b.scrollTop=b.scrollHeight;
+      const [res]=await Promise.all([AIService.ask(q),new Promise(r=>setTimeout(r,650))]);
+      Data.mutate(d=>d.chat.push({role:"assistant",text:res.text,source:res.source,warn:res.warn})); UI.busy=false; render();
+      if(Plan.aiLeft()===0&&Plan.get().id==="free") toast("Это был последний бесплатный запрос в этом месяце","info"); });
+  },
+  pricing(){ const tf=$("#toFree"); if(tf) tf.onclick=async()=>{ if(await confirmBox("Перейти на бесплатный тариф?","Прогнозы, безлимитный ИИ и история старше 6 месяцев станут недоступны. Данные не удалятся.","Перейти")){ await Billing.cancel(); toast("Тариф изменён на бесплатный","info"); render(); } }; },
+  settings(){
+    $("#profF").addEventListener("submit",e=>{ e.preventDefault(); const r=Schemas.register.pick({name:true}).safeParse(formData(e.target)); if(!r.success){ showErrors(e.target,fieldErrors(r.error)); return; } Auth.update(ME.id,{name:r.data.name}); toast("Имя сохранено"); render(); });
+    $$("[data-theme-set]").forEach(b=>b.onclick=()=>{ Data.mutate(d=>d.theme=b.dataset.themeSet); render(); });
+    const cs=$("#cancelSub"); if(cs) cs.onclick=async()=>{ if(await confirmBox("Отменить AI Pro?","Вы перейдёте на бесплатный тариф. Данные сохранятся.","Отменить подписку")){ await Billing.cancel(); toast("Подписка отменена","info"); render(); } };
+    const F=$("#aiSetF"); F.provider.onchange=()=>{ F.model.placeholder=F.provider.value==="anthropic"?"claude-haiku-4-5-20251001":"gpt-4o-mini"; };
+    F.addEventListener("submit",e=>{ e.preventDefault(); const r=Schemas.aiSettings.safeParse(formData(F)); if(!r.success){ showErrors(F,fieldErrors(r.error)); return; } Data.mutate(d=>d.ai=r.data); toast(r.data.provider==="mock"?"Включён демо-режим ИИ":"Настройки ИИ сохранены"); render(); });
+    $("#aiTest").onclick=async()=>{ const r=Schemas.aiSettings.safeParse(formData(F)); if(!r.success){ showErrors(F,fieldErrors(r.error)); return; } if(r.data.provider==="mock"){ toast("Демо-режим работает без подключения","info"); return; }
+      const b=$("#aiTest"); b.disabled=true; b.textContent="Проверяем…";
+      try{ const t=await Providers[r.data.provider](r.data,"Отвечай одним словом по-русски.","Скажи: работает"); toast("Подключение работает: "+t.slice(0,40)); }catch(err){ toast("Не удалось подключиться: "+err.message,"err"); }
+      finally{ b.disabled=false; b.textContent="Проверить подключение"; } };
+    $("#wipe").onclick=async()=>{ if(await confirmBox("Удалить все автомобили и расходы?","Аккаунт и тариф останутся. Это нельзя отменить.")){ Data.mutate(d=>{ d.cars=[]; d.expenses=[]; d.activeCar=null; d.chat=[]; }); UI.calc=null; UI.sim=null; toast("Данные удалены"); render(); } };
+    $("#delAcc").onclick=async()=>{ if(await confirmBox("Удалить аккаунт?","Пользователь и все его данные будут удалены без возможности восстановления.","Удалить аккаунт")){ Auth.remove(ME.id); toast("Аккаунт удалён","info"); location.hash="landing"; } };
+  }
+};
+function drawCalc(){ const r=Calc.ownership(UI.calc); const labels={fuel:"Топливо",insurance:"Страховка",service:"Обслуживание",parking:"Парковка",tax:"Налоги",loan:"Кредит / лизинг"}; const icm={fuel:"fuel",insurance:"shield",service:"wrench",parking:"parking",tax:"receipt",loan:"bank"};
+  const rows=Object.entries(r.parts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]); const max=Math.max(...rows.map(x=>x[1]),1);
+  $("#calcRes").innerHTML=`<div class="res" style="margin-bottom:18px">${kpi("calendar","В месяц",eur2(r.month),"").replace('class="kpi"','class="kpi hl"')}${kpi("chart","В год",eur(r.year),"")}${kpi("road","Стоимость 1 км",numf(r.perKm,3)+" €","")}</div>
+    <div class="hbars">${rows.map(([k,v])=>`<div class="hb"><div class="n">${ic(icm[k])}<span>${labels[k]}</span></div><div class="t"><i style="width:${Math.max(2,v/max*100)}%"></i></div><div class="v">${eur2(v)}<small>${numf(v/r.month*100,0)}%</small></div></div>`).join("")||`<div class="note">Введите данные слева.</div>`}</div>
+    <div class="note" style="margin-top:12px">Топливо = ${numf(UI.calc.km)} км × ${numf(UI.calc.cons,1)} л/100 км × ${numf(UI.calc.price,2)} €/л. Страховка и налоги делятся на 12.</div>`; }
+function drawSim(){ const s=Calc.simulate(UI.calc,UI.sim); const dl=(v,f)=>`<span class="delta ${v>0.005?"up":v<-0.005?"down":""}">${v>0.005?"+":v<-0.005?"−":""}${f(Math.abs(v))}</span>`;
+  $("#simRes").innerHTML=`<div class="res">${kpi("calendar","В месяц",eur2(s.next.month),dl(s.dMonth,eur2)+"<span>к базе</span>")}${kpi("chart","В год",eur(s.next.year),dl(s.dYear,eur)+"<span>к базе</span>")}${kpi("road","1 км",numf(s.next.perKm,3)+" €",dl(s.dKm,v=>numf(v,3)+" €"))}</div>
+    <div class="note" style="margin-top:12px">База: ${eur2(s.base.month)} в месяц. Топливо сейчас ${eur2(s.base.parts.fuel)}, в симуляции ${eur2(s.next.parts.fuel)} в месяц.</div>`; }
+
+/* ---------------- boot ---------------- */
+if(!z){ document.getElementById("app").innerHTML='<div style="padding:40px;font-family:system-ui">Не удалось загрузить модуль валидации. Обновите страницу.</div>'; return; }
+render();
+})();
+</script>
+
+</body>
+</html>
